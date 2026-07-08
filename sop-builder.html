@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        const activeUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!activeUser) {
+            alert("Access Denied! Please login first.");
+            window.location.href = 'index.html'; 
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOP Builder | GSGS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --brand: #ffffff;
+            --accent: #FFD700;
+            --glass: rgba(255, 255, 255, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+        body {
+            min-height: 100vh;
+            background: #0a0a0a url('https://i.pinimg.com/736x/10/df/30/10df3061456a16906401f83ab51336cb.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-blend-mode: overlay;
+            color: white;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(15px);
+            padding: 30px 20px;
+            height: 100vh;
+            position: fixed;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+
+        .active { background: var(--glass); color: var(--accent); border: 1px solid rgba(255,215,0,0.3); }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 40px;
+            width: calc(100% - 260px);
+        }
+
+        /* CAPITAL, YELLOW, & NORMAL BOLD TITLE (Matching Statement of Purpose Style) */
+        .page-title {
+            font-size: 28px;
+            margin-bottom: 30px;
+            color: var(--accent); 
+            font-weight: 700; /* Normal Bold */
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .builder-container {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .input-panel, .preview-panel {
+            flex: 1;
+            height: 800px;
+            border-radius: 10px;
+        }
+
+        .input-panel {
+            background: rgba(20, 20, 20, 0.95);
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-y: auto;
+        }
+
+        .preview-panel {
+            background: white;
+            color: #1a1a1a;
+            padding: 50px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .form-group { margin-bottom: 15px; }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: var(--accent); 
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            outline: none;
+            font-size: 14px;
+        }
+
+        input:focus, textarea:focus { border-color: var(--accent); }
+
+        .sop-content {
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: justify;
+            white-space: pre-line;
+        }
+
+        .download-btn {
+            background: var(--accent);
+            color: black;
+            border: none;
+            padding: 14px;
+            border-radius: 5px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 5px;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        .download-btn:hover { background: white; }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <h2 style="color:var(--accent); margin-bottom:40px; font-weight: 800; letter-spacing: 2px;">GSGS</h2>
+        <nav>
+            <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="universities.html" class="nav-item"><i class="fas fa-university"></i> universities</a>
+            <a href="course-finder.html" class="nav-item"><i class="fas fa-book"></i> course-finder</a>
+            <a href="sop-builder.html" class="nav-item active"><i class="fas fa-file-alt"></i> SOP Builder</a>
+            <a href="scholarship.html" class="nav-item"><i class="fas fa-graduation-cap"></i> Scholarships</a>
+            <a href="financial-guidance.html" class="nav-item"><i class="fas fa-hand-holding-usd"></i> financial guidance</a>
+            <a href="visaguide.html" class="nav-item"><i class="fas fa-passport"></i> Visa Guide</a>
+            <a href="career-support.html" class="nav-item"><i class="fas fa-user-graduate"></i> Career Support</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <h1 class="page-title">Statement of purpose</h1>
+
+        <div class="builder-container">
+            <div class="input-panel">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="inName" placeholder="Student Full Name" oninput="updatePreview()">
+                </div>
+                <div class="form-group">
+                    <label>University & Program</label>
+                    <input type="text" id="inUni" placeholder="Target University" oninput="updatePreview()" style="margin-bottom:8px;">
+                    <input type="text" id="inSub" placeholder="Target Subject" oninput="updatePreview()">
+                </div>
+                <div class="form-group">
+                    <label>Academic History</label>
+                    <textarea id="inHistory" rows="3" placeholder="Educational Background..." oninput="updatePreview()"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Motivation for this Course</label>
+                    <textarea id="inWhy" rows="3" placeholder="Why this university and program?" oninput="updatePreview()"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Financial Plan</label>
+                    <textarea id="inFinance" rows="3" placeholder="Details of your funding source..." oninput="updatePreview()"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Career Goals in Home Country</label>
+                    <textarea id="inHome" rows="3" placeholder="Your plans after graduation in Bangladesh..." oninput="updatePreview()"></textarea>
+                </div>
+                <button class="download-btn" onclick="downloadSOP()">DOWNLOAD as PDF</button>
+            </div>
+
+            <div id="sop-document" class="preview-panel">
+                <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 25px;">
+                    <h2 style="font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Statement of Purpose</h2>
+                </div>
+                <div class="sop-content">
+                    <strong>To,
+                    The Admission Committee,
+                    <span id="outUni">[University Name]</span></strong>
+
+                    Dear Sir/Madam,
+
+                    I, <span id="outName" style="font-weight: 700;">[Your Name]</span>, am writing this statement to express my keen interest in the <span id="outSub" style="color: #0d47a1; font-weight: bold;">[Selected Program]</span>.
+
+                    <strong>Academic Background:</strong>
+                    <span id="outHistory">...</span>
+
+                    <strong>Motivation:</strong>
+                    <span id="outWhy">...</span>
+
+                    <strong>Financial Stability:</strong>
+                    <span id="outFinance">...</span>
+
+                    <strong>Plans for Home Country:</strong>
+                    <span id="outHome">...</span>
+
+                    <p style="margin-top: 30px;">Sincerely,</p>
+                    <p><strong><span id="outName2">[Your Name]</span></strong></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function updatePreview() {
+            const fields = ['Name', 'Uni', 'Sub', 'History', 'Why', 'Finance', 'Home'];
+            fields.forEach(f => {
+                const val = document.getElementById('in' + f).value;
+                document.getElementById('out' + f).innerText = val || `...`;
+                if(f === 'Name') document.getElementById('outName2').innerText = val || '[Your Name]';
+            });
+        }
+
+        function downloadSOP() {
+            const element = document.getElementById('sop-document');
+            html2pdf().set({
+                margin: 15,
+                filename: 'SOP_GSGS_Portal.pdf',
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            }).from(element).save();
+        }
+    </script>
+</body>
+</html>
