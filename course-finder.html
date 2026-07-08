@@ -1,0 +1,3059 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+     <script>
+        // Security Guard: Check if a user is logged in
+        const activeUser = JSON.parse(localStorage.getItem('currentUser'));
+
+        if (!activeUser) {
+            // If no user is found in memory, block access and send them back to login
+            alert("Access Denied! Please login to your GSGS account first.");
+            window.location.href = 'index.html';
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Finder | GSGS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #050505;
+            --panel: #111111;
+            --accent: #22c55e;
+            --white: #ffffff;
+            --text-gray: #a0a0a0;
+            --border: #222222;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--white);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            padding: 30px;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .sidebar h2 {
+            color: var(--accent);
+            font-size: 24px;
+            margin-bottom: 40px;
+        }
+
+        .nav-link {
+            color: var(--text-gray);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .nav-link.active {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 250px;
+            padding: 50px;
+            width: 100%;
+        }
+
+        .top-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .top-info h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        /* NEW: Green Styled Subtitle */
+        .top-info p {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .view-saved-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            padding: 10px 20px;
+            border-radius: 6px;
+            color: var(--accent);
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .view-saved-btn.filtering {
+            background: var(--accent);
+            color: black;
+        }
+
+        /* Course Rows */
+        .course-row {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .course-name-btn {
+            padding: 25px 30px;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .uni-list {
+            display: none;
+            background: #0a0a0a;
+            padding: 10px 30px 20px 30px;
+            border-top: 1px solid var(--border);
+        }
+
+        .uni-item-name {
+            padding: 18px 0;
+            border-bottom: 1px solid #1a1a1a;
+            cursor: pointer;
+            color: var(--text-gray);
+            display: flex;
+            justify-content: space-between;
+            transition: color 0.3s ease;
+        }
+
+        .uni-item-name.active-uni {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .overview-box {
+            display: none;
+            background: #151515;
+            border: 1px solid var(--accent);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .box-title {
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 10px;
+        }
+
+        .description-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #d0d0d0;
+            margin-bottom: 25px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-card {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .info-card.no-work {
+            border-left-color: var(--danger);
+        }
+
+        .info-card.no-work label {
+            color: var(--danger);
+        }
+
+        .info-card label {
+            display: block;
+            font-size: 11px;
+            color: var(--accent);
+            font-weight: 800;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .info-card span {
+            font-size: 16px;
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+            border: none;
+        }
+
+        .btn-green {
+            background: var(--accent);
+            color: black;
+        }
+
+        .btn-outline {
+            border: 1px solid var(--white);
+            color: var(--white);
+            background: transparent;
+        }
+
+        .btn-save {
+            background: #222;
+            color: var(--white);
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-save.active {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Search filter */
+        .hidden {
+            display: none !important;
+        }
+
+        .other-programs {
+            margin-top: 25px;
+            margin-bottom: 25px;
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border-radius: 8px;
+
+            display: inline-block;
+   
+            max-width: fit-content;
+      
+        }
+
+        .other-programs-title {
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .other-programs-list {
+            display: none;
+            color: #d0d0d0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+
+.course-name-btn i {
+    transition: transform 0.3s ease-in-out;
+    display: inline-block;
+}
+
+.active-row .course-name-btn i {
+    transform: rotate(180deg);
+}  
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <h2>GSGS</h2>
+         <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="universities.html" class="nav-link"><i class="fas fa-university"></i> Universities</a>
+            <a href="course-finder.html" class="nav-link active"><i class="fas fa-book"></i> course-finder</a>
+            <a href="sop-builder.html" class="nav-link"><i class="fas fa-file-alt"></i> SOP Builder</a>
+            <a href="scholarship.html" class="nav-link"><i class="fas fa-graduation-cap"></i> Scholarship</a>
+            <a href="financial-guidance.html" class="nav-link"><i class="fas fa-hand-holding-usd"></i> financial-guidance</a>
+            <a href="visa-guide.html" class="nav-link"><i class="fas fa-passport"></i> visa-guide</a>
+            <a href="career-support.html" class="nav-link"><i class="fas fa-user-graduate"></i> Career Hub</a>
+    </div>
+
+    <div class="main">
+        <div class="top-info">
+            <div>
+                <h1>Course Finder</h1>
+                <p>FIND YOUR PERFECT PROGRAM IN SECONDS</p>
+            </div>
+            <button id="filterSaved" class="view-saved-btn" onclick="toggleSavedFilter()">
+                <i class="fas fa-bookmark"></i> My Shortlist
+            </button>
+        </div>
+        <div class="search-container" style="margin-bottom: 30px;">
+            <input type="text" id="uniSearch" placeholder="Search courses, universities, or countries..."
+                onkeyup="searchFunction()"
+                style="width: 100%; padding: 15px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; color: white; font-size: 16px; outline: none;">
+        </div>
+
+        <div id="displayArea"></div>
+    </div>
+
+    <script>
+        const db = [
+            {
+                course: "Masters in Data Science",
+                unis: [
+                    {
+                        id: "salford-ds",
+                        name: "University of Salford",
+                        programs: [
+                            "Data Science",
+                            "Artificial Intelligence",
+                            "Business Analytics"
+                        ],
+
+                        details: "Gain advanced skills in Big Data, Machine Learning, and Data Visualization in the heart of Manchester's tech hub.",
+                        cost: "$21,400 per year",
+                        test: "IELTS 6.0 (Min 5.5 in all parts)",
+                        start: "September / January",
+                        applyBy: "June 15, 2026",
+                        location: "Manchester, UK",
+                        gift: "$2,600 Scholarship available",
+                        partTime: "Allowed (20 Hours per week)",
+                        postStudy: "2-Year Stay-back Permit",
+                        allowWork: true
+
+                    },
+
+                    {
+                        id: "herts-ds",
+                        name: "University of Hertfordshire",
+                        details: "A comprehensive program covering data mining, neural networks, and big data analytics, located just north of London.",
+                        cost: "$20,200 per year",
+                        test: "IELTS 6.5 (Min 6.0)",
+                        start: "September / January",
+                        applyBy: "July 1, 2026",
+                        location: "Hatfield (London North), UK",
+                        gift: "$2,000 Dean's Scholarship",
+                        partTime: "Allowed (20 Hours per week)",
+                        postStudy: "2-Year Stay-back Permit",
+                        allowWork: true
+                    },
+                    {
+                        id: "mmu-ds",
+                        name: "Manchester Metropolitan University",
+                        details: "Strong emphasis on professional practice and employability, featuring a dedicated high-performance computing cluster.",
+                        cost: "$23,500 per year",
+                        test: "IELTS 6.5 (Min 6.0)",
+                        start: "September Only",
+                        applyBy: "May 30, 2026",
+                        location: "Manchester, UK",
+                        gift: "$2,500 International Excellence Award",
+                        partTime: "Allowed (20 Hours per week)",
+                        postStudy: "2-Year Stay-back Permit",
+                        allowWork: true
+                    },
+                    {
+                        id: "sheffield-ds",
+                        name: "Sheffield Hallam University",
+                        details: "Provides a technical grounding in data science with the option to specialize in business intelligence or cloud computing.",
+                        cost: "$19,950 per year",
+                        test: "IELTS 6.0 (Min 5.5)",
+                        start: "September / January",
+                        applyBy: "August 15, 2026",
+                        location: "Sheffield, UK",
+                        gift: "$3,500 Automatic Vice-Chancellor’s Scholarship",
+                        partTime: "Allowed (20 Hours per week)",
+                        postStudy: "2-Year Stay-back Permit",
+                        allowWork: true
+                    },
+                    {
+                        id: "coventry-ds",
+                        name: "Coventry University",
+                        details: "Renowned for its modern facilities and practical 'learn-by-doing' approach to complex data modeling and ethics.",
+                        cost: "$22,800 per year",
+                        test: "IELTS 6.5 (Min 5.5)",
+                        start: "Sept / Jan / May",
+                        applyBy: "Flexible (Monthly Intakes)",
+                        location: "Coventry, UK",
+                        gift: "$1,500 Early Bird Discount",
+                        partTime: "Allowed (20 Hours per week)",
+                        postStudy: "2-Year Stay-back Permit",
+                        allowWork: true
+                    },
+                    {
+                        id: "asu-ds",
+                        name: "Arizona State University (USA)",
+                        details: "Ranked #1 for innovation. Focuses on large-scale data systems and AI ethics.",
+                        cost: "$38,500",
+                        test: "IELTS 6.5 / TOEFL 80",
+                        start: "August / January",
+                        applyBy: "April 1, 2026",
+                        location: "Phoenix, Arizona",
+                        gift: "Merit-based waivers available",
+                        partTime: "On-campus Only",
+                        postStudy: "3-Year STEM OPT",
+                        allowWork: true
+                    },
+                    {
+                        id: "neu-ds",
+                        name: "Northeastern University (USA)",
+                        details: "Famous for 'Co-op' placements where students work full-time in tech companies.",
+                        cost: "$35,000",
+                        test: "IELTS 7.0 / GRE Optional",
+                        start: "Sept / Jan",
+                        applyBy: "May 1, 2026",
+                        location: "Boston / Seattle",
+                        gift: "Double Husky Scholarship",
+                        partTime: "20 Hrs/Week",
+                        postStudy: "3-Year STEM OPT",
+                        allowWork: true
+                    },
+                    // --- CANADA ---
+                    {
+                        id: "ubc-ds",
+                        name: "University of British Columbia (Canada)",
+                        details: "10-month intensive professional program in one of the world's most livable cities.",
+                        cost: "$36,200",
+                        test: "IELTS 7.0",
+                        start: "September Only",
+                        applyBy: "Jan 15, 2026",
+                        location: "Vancouver, Canada",
+                        gift: "Entrance Awards up to $5k",
+                        partTime: "Off-campus Allowed",
+                        postStudy: "3-Year PGWP",
+                        allowWork: true
+                    },
+                    {
+                        id: "uottawa-ds",
+                        name: "University of Ottawa (Canada)",
+                        details: "Focus on Applied Data Science with options for bilingual (French/English) study.",
+                        cost: "$22,000",
+                        test: "IELTS 6.5",
+                        start: "Sept / Jan",
+                        applyBy: "March 1, 2026",
+                        location: "Ottawa, Canada",
+                        gift: "$1,000 - $4,000 Grant",
+                        partTime: "20 Hrs/Week",
+                        postStudy: "3-Year PGWP",
+                        allowWork: true
+                    },
+                    // --- AUSTRALIA ---
+                    {
+                        id: "monash-ds",
+                        name: "Monash University (Australia)",
+                        details: "Member of Group of Eight. Covers data curation and high-performance computing.",
+                        cost: "$31,000",
+                        test: "IELTS 6.5",
+                        start: "Feb / July",
+                        applyBy: "Nov 30, 2025",
+                        location: "Melbourne, Australia",
+                        gift: "$10,000 Study Grant",
+                        partTime: "48 Hrs / Fortnight",
+                        postStudy: "4-Year Work Rights",
+                        allowWork: true
+                    },
+                    {
+                        id: "qut-ds",
+                        name: "Queensland University of Technology (Australia)",
+                        details: "Strong ties with Australian government data agencies and research labs.",
+                        cost: "$28,500",
+                        test: "IELTS 6.5",
+                        start: "Feb / July",
+                        applyBy: "Dec 15, 2025",
+                        location: "Brisbane, Australia",
+                        gift: "25% Tuition Fee Waiver",
+                        partTime: "Allowed",
+                        postStudy: "4-Year Work Rights",
+                        allowWork: true
+                    },
+                    // --- GERMANY (EUROPE) ---
+                    {
+                        id: "tum-ds",
+                        name: "Technical University of Munich (Germany)",
+                        details: "World-class engineering school. Very low tuition, but highly competitive.",
+                        cost: "$3,000 (Fees) + Living",
+                        test: "IELTS 6.5 + GRE",
+                        start: "October Only",
+                        applyBy: "May 31, 2026",
+                        location: "Munich, Germany",
+                        gift: "Tuition is nearly free",
+                        partTime: "20 Hrs/Week",
+                        postStudy: "18-Month Job Seeker",
+                        allowWork: true
+                    },
+                    {
+                        id: "iu-ds",
+                        name: "IU International University (Germany)",
+                        details: "Flexible study options. Very popular for international students looking for jobs.",
+                        cost: "$12,000",
+                        test: "IELTS 6.0",
+                        start: "Anytime (Rolling)",
+                        applyBy: "Flexible",
+                        location: "Berlin / Bad Honnef",
+                        gift: "Up to 75% Scholarship",
+                        partTime: "Allowed",
+                        postStudy: "18-Month Job Seeker",
+                        allowWork: true
+                    },
+                    // --- IRELAND ---
+                    {
+                        id: "tcd-ds",
+                        name: "Trinity College Dublin (Ireland)",
+                        details: "Ireland’s top-ranked university. Located next to Google & Meta HQs.",
+                        cost: "$24,500",
+                        test: "IELTS 6.5",
+                        start: "September Only",
+                        applyBy: "June 30, 2026",
+                        location: "Dublin, Ireland",
+                        gift: "$5,000 Global Award",
+                        partTime: "20 Hrs/Week",
+                        postStudy: "2-Year Stay-back",
+                        allowWork: true
+                    }
+                ]
+            },
+            
+            {
+        course: "Bachelors / Masters in Electrical & Electronic Engineering (EEE)",
+        unis: [
+            
+      
+            {
+                id: "mit-eee",
+                name: "Massachusetts Institute of Technology (USA)",
+                details: "The gold standard for EEE. Home to the Research Laboratory of Electronics (RLE). Incredibly competitive.",
+                cost: "$62,000",
+                test: "IELTS 7.5 / SAT / GRE",
+                start: "September",
+                applyBy: "Jan 1, 2026",
+                location: "Cambridge, USA",
+                gift: "MIT Scholarships (Need-blind for Intl)",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Electrical Engineering & CS", "MEng Electrical Engineering"]
+            },
+            {
+                id: "berkeley-eee",
+                name: "UC Berkeley (USA)",
+                details: "Top-ranked public university. Famous for semiconductor research and its proximity to Silicon Valley.",
+                cost: "$48,000",
+                test: "IELTS 7.0",
+                start: "August",
+                applyBy: "Nov 30 (Prior Year)",
+                location: "Berkeley, USA",
+                gift: "Berkeley International Office Awards",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Electrical Engineering & CS", "MSc EECS"]
+            },
+            // --- UNITED KINGDOM ---
+            {
+                id: "cambridge-eee",
+                name: "University of Cambridge (UK)",
+                details: "The highest-ranked EEE program in Europe. Focuses heavily on the intersection of physics and electronics.",
+                cost: "$51,000",
+                test: "IELTS 7.5",
+                start: "October",
+                applyBy: "Oct 15 (Prior Year)",
+                location: "Cambridge, UK",
+                gift: "Cambridge Trust Scholarships",
+                partTime: "Limited (Uni approval needed)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BA/MEng Engineering (Electrical & Information)"]
+            },
+            {
+                id: "southampton-eee",
+                name: "University of Southampton (UK)",
+                details: "A UK leader specifically in Electronics and Computer Science (ECS). World-class cleanroom facilities for nano-electronics.",
+                cost: "$35,000",
+                test: "IELTS 6.5",
+                start: "September",
+                applyBy: "Jan 2026 / Rolling",
+                location: "Southampton, UK",
+                gift: "Southampton Merit Scholarships",
+                partTime: "Allowed (20h)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BEng Electronic Engineering", "MSc Microelectronic Systems Design"]
+            },
+            // --- EUROPE ---
+            {
+                id: "eth-eee",
+                name: "ETH Zurich (Switzerland)",
+                details: "Consistently ranked #1 in Continental Europe. Known for robotics, control systems, and power electronics.",
+                cost: "$1,800 (Annual)",
+                test: "IELTS 7.0 / German C1 (for BSc)",
+                start: "September",
+                applyBy: "Dec - Mar 2026",
+                location: "Zurich, Switzerland",
+                gift: "Excellence Scholarship (ESOP)",
+                partTime: "Allowed (15h)",
+                postStudy: "6-Month Job Seeker",
+                allowWork: true,
+                programs: ["BSc Electrical Engineering", "MSc Electrical Engineering & IT"]
+            },
+            {
+                id: "kth-eee",
+                name: "KTH Royal Institute of Technology (Sweden)",
+                details: "Sweden's top technical school. Strong focus on smart grids and sustainable energy systems.",
+                cost: "$18,000",
+                test: "IELTS 6.5",
+                start: "August",
+                applyBy: "Jan 15, 2026",
+                location: "Stockholm, Sweden",
+                gift: "KTH Scholarship",
+                partTime: "Allowed (No limit)",
+                postStudy: "1-Year Stay Back",
+                allowWork: true,
+                programs: ["MSc Electric Power Engineering", "MSc ICT Innovation"]
+            },
+            // --- ASIA & AUSTRALIA ---
+            {
+                id: "nus-eee",
+                name: "National University of Singapore (Singapore)",
+                details: "A giant in Asian engineering. Known for its 'Green Electronics' and AI-integrated hardware research.",
+                cost: "$30,000",
+                test: "IELTS 6.5",
+                start: "August",
+                applyBy: "Feb 2026",
+                location: "Singapore",
+                gift: "NUS Global Merit Scholarship",
+                partTime: "Allowed (16h)",
+                postStudy: "1-Year LTVP",
+                allowWork: true,
+                programs: ["BEng Electrical Engineering", "MSc Electrical Engineering"]
+            },
+            {
+                id: "tsinghua-eee",
+                name: "Tsinghua University (China)",
+                details: "Ranked #1 in Asia for Engineering. Extreme focus on power systems and electrical automation.",
+                cost: "$6,500",
+                test: "HSK 5 / IELTS 7.0",
+                start: "September",
+                applyBy: "March 2026",
+                location: "Beijing, China",
+                gift: "Chinese Government Scholarship",
+                partTime: "Limited",
+                postStudy: "1-Year Visa",
+                allowWork: true,
+                programs: ["BEng Electrical Engineering", "MSc Electrical Engineering"]
+            },
+            {
+                id: "unimelb-eee",
+                name: "University of Melbourne (Australia)",
+                details: "Australia's top choice for engineering. Note that 'Electrical Engineering' is often a 3+2 model (BSc + Master).",
+                cost: "$36,000",
+                test: "IELTS 6.5",
+                start: "Feb / July",
+                applyBy: "Rolling",
+                location: "Melbourne, Australia",
+                gift: "Melbourne International Undergraduate Scholarship",
+                partTime: "Allowed (24h)",
+                postStudy: "2-4 Year Work Rights",
+                allowWork: true,
+                programs: ["Master of Electrical Engineering", "BSc Electrical Systems"]
+            }
+        ]
+    
+        
+    },
+    {
+        course: "Bachelors / Masters in Civil & Structural Engineering",
+        unis: [
+            {
+                id: "unsw-civil",
+                name: "UNSW Sydney (Australia)",
+                details: "Strong emphasis on sustainable infrastructure and water management.",
+                cost: "$34,000 per year",
+                test: "IELTS 6.5 (Min 6.0)",
+                start: "Feb / June / Sept",
+                applyBy: "Late (Rolling Admissions)",
+                location: "Sydney, Australia",
+                gift: "$5,000 Future of Engineering Award",
+                partTime: "48 Hours / Fortnight",
+                postStudy: "4-Year Post-Study Work",
+                allowWork: true,
+                programs: ["BEng Civil Engineering", "MSc Structural Engineering"]
+            },
+            {
+                id: "ucl-civil",
+                name: "University College London (UK)",
+                details: "Focuses on 'Engineering for a Better World'. Located in central London.",
+                cost: "$35,000",
+                test: "IELTS 7.0",
+                start: "September",
+                applyBy: "Jan 2026 (BSc) / June (MSc)",
+                location: "London, UK",
+                gift: "UCL Global Undergraduate Scholarship",
+                partTime: "Allowed (20 Hours)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BEng Civil Engineering", "MSc Civil Infrastructure"]
+            }
+        ]
+    },
+    {
+        course: "BEng / MSc Aerospace Engineering",
+        unis: [
+            {
+                id: "wichita-aero",
+                name: "Wichita State University (USA)",
+                details: "Located in the 'Air Capital of the World' with deep ties to Airbus and Textron.",
+                cost: "$18,500 per year",
+                test: "IELTS 6.0",
+                start: "August / January",
+                applyBy: "June 1, 2026",
+                location: "Wichita, Kansas",
+                gift: "Global Select Scholarship ($5k)",
+                partTime: "On-Campus Only",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Aerospace Engineering", "MSc Aerodynamics"]
+            },
+            {
+                id: "emirat-aero",
+                name: "Emirates Aviation University (UAE)",
+                details: "Industry-aligned programs with the Emirates Group.",
+                cost: "$22,000",
+                test: "IELTS 6.0",
+                start: "Sept / Feb",
+                applyBy: "August 2026",
+                location: "Dubai, UAE",
+                gift: "Academic Excellence Discount",
+                partTime: "Not Allowed", // TRIGGER RED
+                postStudy: "None (Sponsorship Required)", // TRIGGER RED
+                allowWork: false,
+                programs: ["BSc Aircraft Maintenance", "MSc Aviation Safety"]
+            }
+        ]
+    },
+    {
+        course: "MSc Biomedical Engineering",
+        unis: [
+            {
+                id: "glasgow-biomed",
+                name: "University of Glasgow (UK)",
+                details: "Focuses on medical devices, biomaterials, and cell engineering.",
+                cost: "$29,000",
+                test: "IELTS 6.5 (Min 6.0)",
+                start: "September",
+                applyBy: "July 2026",
+                location: "Glasgow, Scotland",
+                gift: "$6,500 International Leadership Award",
+                partTime: "Allowed (20 Hours)",
+                postStudy: "2-Year Stay-back",
+                allowWork: true,
+                programs: ["MSc Biomedical Engineering", "MSc Bioinformatics"]
+            }
+        ]
+    },
+    {
+        course: "Master of Business Administration (MBA)",
+        unis: [
+            {
+                id: "harvard-mba",
+                name: "Harvard Business School (USA)",
+                details: "A world-renowned program focusing on the case-study method and global leadership.",
+                cost: "$76,000 per year",
+                test: "IELTS 7.5 / GMAT Required",
+                start: "August Only",
+                applyBy: "January 5, 2026",
+                location: "Boston, USA",
+                gift: "Need-based fellowships",
+                partTime: "On-campus (Limited)", 
+                postStudy: "1-Year OPT (Non-STEM)", // Note: Standard MBA is often 1 year
+                allowWork: true,
+                programs: ["General Management", "Finance", "Entrepreneurship"]
+            },
+            {
+                id: "ul-mba",
+                name: "University of Limassol (Cyprus)",
+                details: "A flexible European MBA. Great for students wanting to work in the EU.",
+                cost: "$12,500",
+                test: "IELTS 6.0",
+                start: "Sept / Jan",
+                applyBy: "July 2026",
+                location: "Limassol, Cyprus",
+                gift: "30% Early Bird Scholarship",
+                partTime: "Not Allowed", // THIS CARD WILL TURN RED
+                postStudy: "None",       // THIS CARD WILL TURN RED
+                allowWork: false,
+                programs: ["Shipping MBA", "Green Energy Management"]
+            }
+        ]
+    },
+    
+    {
+        course: "MSc Mechanical Engineering",
+        unis: [
+            {
+                id: "rwth-mech",
+                name: "RWTH Aachen (Germany)",
+                details: "One of the best engineering schools in the world. Deep ties to the German car industry.",
+                cost: "$0 Tuition (Fees ~$350/sem)",
+                test: "IELTS 6.5 + GRE",
+                start: "October Only",
+                applyBy: "March 1, 2026",
+                location: "Aachen, Germany",
+                gift: "Publicly funded (Tuition-free)",
+                partTime: "20 Hours/Week",
+                postStudy: "18-Month Job Seeker", // SHOULD BE GREEN
+                allowWork: true,
+                programs: ["Automotive Engineering", "Robotics", "Production Power"]
+            }
+        ]
+    },
+    {
+        course: "English Literature & Creative Writing",
+        unis: [
+            {
+                id: "oxford-eng",
+                name: "University of Oxford (UK)",
+                details: "One of the world's oldest and most prestigious English programs. Intense focus on tutorial-based learning.",
+                cost: "$42,000",
+                test: "IELTS 7.5 (Min 7.0)",
+                start: "October Only",
+                applyBy: "October 15, 2025",
+                location: "Oxford, UK",
+                gift: "Clarendon Fund Scholarships",
+                partTime: "Allowed (20 Hours)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BA English Language", "MA Creative Writing", "MSt English Literature"]
+            },
+            {
+                id: "kyoto-eng",
+                name: "Kyoto University (Japan)",
+                details: "Study English Literature from a global, Eastern perspective in Japan's cultural capital.",
+                cost: "$5,500 (Tuition)",
+                test: "IELTS 6.5",
+                start: "April / October",
+                applyBy: "December 2025",
+                location: "Kyoto, Japan",
+                gift: "MEXT Government Scholarship",
+                partTime: "Not Allowed (Requires Permit)", // TRIGGER RED
+                postStudy: "None (Without Job Offer)",    // TRIGGER RED
+                allowWork: false,
+                programs: ["BA English Studies", "MA Global Literature"]
+            }
+        ]
+    },
+    {
+        course: "BSc / MSc Mathematics & Statistics",
+        unis: [
+            {
+                id: "eth-math",
+                name: "ETH Zurich (Switzerland)",
+                details: "Top-ranked technical university. Focus on pure math, financial math, and insurance science.",
+                cost: "$1,600 (Fees) + High Living Cost",
+                test: "IELTS 7.0",
+                start: "September",
+                applyBy: "December 15, 2025",
+                location: "Zurich, Switzerland",
+                gift: "Excellence Scholarship (Full Funding)",
+                partTime: "15 Hours/Week",
+                postStudy: "6-Month Job Seeker", 
+                allowWork: true,
+                programs: ["BSc Mathematics", "MSc Statistics", "MSc Data Science"]
+            },
+            {
+                id: "waterloo-math",
+                name: "University of Waterloo (Canada)",
+                details: "Home to the world's largest Faculty of Mathematics. Famous for its Co-op work program.",
+                cost: "$38,000",
+                test: "IELTS 7.0",
+                start: "Sept / Jan",
+                applyBy: "Feb 1, 2026",
+                location: "Waterloo, Canada",
+                gift: "$2,000 - $10,000 Entrance Awards",
+                partTime: "20 Hours (Off-campus)",
+                postStudy: "3-Year PGWP",
+                allowWork: true,
+                programs: ["BMath Actuarial Science", "MMath Quantum Computing"]
+            }
+        ]
+    },
+    {
+        course: "Economics & Finance",
+        unis: [
+            {
+                id: "lse-econ",
+                name: "London School of Economics (LSE)",
+                details: "Global leader in social sciences. Located in the heart of London's financial district.",
+                cost: "$31,000",
+                test: "IELTS 7.0 + GRE/GMAT",
+                start: "September",
+                applyBy: "Jan 2026 (Rolling)",
+                location: "London, UK",
+                gift: "LSE Graduate Support Scheme",
+                partTime: "20 Hours/Week",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BSc Economics", "MSc Econometrics", "MSc Finance"]
+            }
+        ]
+    },
+    {
+        course: "Accounting & Financial Management",
+        unis: [
+            {
+                id: "monash-acc",
+                name: "Monash University (Australia)",
+                details: "Triple-accredited business school. High focus on professional accounting standards.",
+                cost: "$33,500",
+                test: "IELTS 6.5",
+                start: "Feb / July",
+                applyBy: "Dec 2025",
+                location: "Melbourne, Australia",
+                gift: "Monash Business School Grant",
+                partTime: "48 Hours / Fortnight",
+                postStudy: "3-Year Post-Study Work",
+                allowWork: true,
+                programs: ["BCom Accounting", "Master of Professional Accounting"]
+            }
+        ]
+    },
+    {
+        course: "Marketing & Digital Communications",
+        unis: [
+            {
+                id: "nyu-mark",
+                name: "New York University (USA)",
+                details: "Located in Manhattan. Focus on brand management, digital marketing, and analytics.",
+                cost: "$58,000",
+                test: "IELTS 7.5 / TOEFL 100",
+                start: "August / January",
+                applyBy: "Feb 15, 2026",
+                location: "New York City, USA",
+                gift: "Merit-based Dean's Scholarship",
+                partTime: "On-campus only",
+                postStudy: "1-Year OPT (Non-STEM)", // OPT stays green, but warning-worthy
+                allowWork: true,
+                programs: ["MS Integrated Marketing", "BS Marketing"]
+            }
+        ]
+    },
+    {
+        course: "Business Administration & Management",
+        unis: [
+            {
+                id: "insead-biz",
+                name: "INSEAD (France/Singapore)",
+                details: "The 'Business School for the World'. Highly intensive 10-month MBA program.",
+                cost: "$98,000",
+                test: "IELTS 7.5 + GMAT",
+                start: "Aug / Jan",
+                applyBy: "Varies (4 Rounds)",
+                location: "Fontainebleau, France",
+                gift: "Diversity & Leadership Scholarships",
+                partTime: "Not Recommended (Intensive)",
+                postStudy: "1-Year Job Seeker (France)",
+                allowWork: true,
+                programs: ["Master in Management (MiM)", "MBA"]
+            },
+            {
+                id: "yonsei-biz",
+                name: "Yonsei University (South Korea)",
+                details: "Part of the prestigious 'SKY' universities. Strong focus on East Asian business.",
+                cost: "$9,000 per semester",
+                test: "IELTS 6.5",
+                start: "March / Sept",
+                applyBy: "Oct 2025",
+                location: "Seoul, South Korea",
+                gift: "Global Leader Fellowship",
+                partTime: "Not Allowed (First 6 months)", // TRIGGER RED
+                postStudy: "None (Requires D-10 Visa)",    // TRIGGER RED
+                allowWork: false,
+                programs: ["Global MBA", "BBA Business Administration"]
+            }
+        ]
+    },
+    {
+        course: "Fine Arts & Digital Media",
+        unis: [
+            {
+                id: "saic-art",
+                name: "School of the Art Institute of Chicago (USA)",
+                details: "Consistently ranked among the top art schools globally. Highly interdisciplinary approach.",
+                cost: "$54,000",
+                test: "IELTS 6.5 / Portfolio Required",
+                start: "August Only",
+                applyBy: "January 15, 2026",
+                location: "Chicago, USA",
+                gift: "Merit-based Presidential Scholarship",
+                partTime: "On-campus Only",
+                postStudy: "1-Year OPT",
+                allowWork: true,
+                programs: ["BFA Studio Art", "MFA Visual Communication", "MA Art Therapy"]
+            }
+        ]
+    },
+    {
+        course: "Fashion Design & Luxury Management",
+        unis: [
+            {
+                id: "marangoni-fashion",
+                name: "Istituto Marangoni (Italy/France)",
+                details: "The world's leading fashion school. Deep industry connections with brands like Prada and Gucci.",
+                cost: "$28,000 - $35,000",
+                test: "IELTS 6.0",
+                start: "Oct / Feb",
+                applyBy: "June 2026",
+                location: "Milan, Italy",
+                gift: "Regional Study Grants",
+                partTime: "20 Hours/Week",
+                postStudy: "1-Year Job Seeker (Permesso)",
+                allowWork: true,
+                programs: ["BA Fashion Design", "MA Luxury Brand Management", "MA Fashion Buying"]
+            },
+            {
+                id: "esmod-dubai",
+                name: "ESMOD Dubai (UAE)",
+                details: "French fashion education in the heart of the Middle East's luxury hub.",
+                cost: "$21,000",
+                test: "IELTS 5.5",
+                start: "September",
+                applyBy: "August 2026",
+                location: "Dubai, UAE",
+                gift: "Early Bird Discount",
+                partTime: "Not Allowed (Student Visa)", // TRIGGER RED
+                postStudy: "None (Requires Sponsor)",     // TRIGGER RED
+                allowWork: false,
+                programs: ["BA Fashion Design", "Diploma in Fashion Marketing"]
+            }
+        ]
+    },
+    {
+        course: "Architecture & Urban Design",
+        unis: [
+            {
+                id: "aa-arch",
+                name: "Architectural Association (UK)",
+                details: "The oldest independent school of architecture in the UK. Known for avant-garde design.",
+                cost: "$29,500",
+                test: "IELTS 6.5 (Min 6.0)",
+                start: "September Only",
+                applyBy: "January 2026",
+                location: "London, UK",
+                gift: "AA Bursaries (Need-based)",
+                partTime: "Allowed (20 Hours)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["RIBA Part 1 & 2", "MA Sustainable Environmental Design"]
+            }
+        ]
+    },
+    {
+        course: "Law (LLB & LLM)",
+        unis: [
+            {
+                id: "cambridge-law",
+                name: "University of Cambridge (UK)",
+                details: "World-class legal education focusing on rigorous analysis and historical context.",
+                cost: "$38,500",
+                test: "IELTS 7.5 (Min 7.0)",
+                start: "October",
+                applyBy: "Oct 15, 2025",
+                location: "Cambridge, UK",
+                gift: "Cambridge Trust Scholarships",
+                partTime: "Limited (10-20 Hours)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BA Law (LLB)", "Master of Law (LLM)"]
+            },
+            {
+                id: "unige-law",
+                name: "University of Geneva (Switzerland)",
+                details: "Top-tier law school specializing in International Law and Dispute Resolution.",
+                cost: "$1,200 (Fees) + High Living",
+                test: "IELTS 7.0",
+                start: "September",
+                applyBy: "Feb 2026",
+                location: "Geneva, Switzerland",
+                gift: "Excellence Masters Fellowships",
+                partTime: "Allowed (After 6 months)",
+                postStudy: "6-Month Search Permit", 
+                allowWork: true,
+                programs: ["LLM International Law", "Master in Economic Law"]
+            }
+        ]
+    },
+  
+    {
+        course: "BSc / MSc Physics & Astrophysics",
+        unis: [
+            {
+                id: "mit-physics",
+                name: "Massachusetts Institute of Technology (MIT)",
+                details: "The gold standard for physics research. Focuses on everything from quantum mechanics to black holes.",
+                cost: "$62,000",
+                test: "IELTS 7.5 / TOEFL 100",
+                start: "September",
+                applyBy: "January 1, 2026",
+                location: "Cambridge, USA",
+                gift: "Full-need financial aid",
+                partTime: "On-campus Only",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Physics", "MSc Quantum Physics", "PhD Astrophysics"]
+            },
+            {
+                id: "tokyo-phys",
+                name: "University of Tokyo (Japan)",
+                details: "Japan's top research university. Leading center for particle physics and condensed matter.",
+                cost: "$4,200 (Tuition)",
+                test: "IELTS 6.5",
+                start: "April / Oct",
+                applyBy: "December 2025",
+                location: "Tokyo, Japan",
+                gift: "MEXT Scholarship Available",
+                partTime: "Not Allowed (Standard)", // TRIGGER RED
+                postStudy: "None (Without Job)",    // TRIGGER RED
+                allowWork: false,
+                programs: ["BSc Physics", "MSc Particle Physics"]
+            }
+        ]
+    },
+    {
+        course: "BSc / MSc Chemistry & Nanotechnology",
+        unis: [
+            {
+                id: "berkeley-chem",
+                name: "UC Berkeley (USA)",
+                details: "Ranked #1 for chemistry globally. Home to multiple Nobel Prize-winning faculty.",
+                cost: "$48,000 (Out-of-state)",
+                test: "IELTS 7.0",
+                start: "August",
+                applyBy: "November 30, 2025",
+                location: "Berkeley, USA",
+                gift: "Berkeley Undergraduate Scholarships",
+                partTime: "Allowed (20 Hours)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Chemistry", "MSc Chemical Biology", "MSc Nanomaterials"]
+            },
+            {
+                id: "sorbonne-chem",
+                name: "Sorbonne University (France)",
+                details: "A historic institution in the heart of Paris with world-class labs.",
+                cost: "$3,800 (International Rate)",
+                test: "IELTS 6.5 / French B2",
+                start: "September",
+                applyBy: "March 2026",
+                location: "Paris, France",
+                gift: "Eiffel Excellence Scholarship",
+                partTime: "Not Allowed (First Year)", // TRIGGER RED
+                postStudy: "1-Year Job Search (APS)",
+                allowWork: false,
+                programs: ["BSc Chemistry", "MSc Molecular Chemistry"]
+            }
+        ]
+    },
+    {
+        course: "Biological & Life Sciences",
+        unis: [
+            {
+                id: "cambridge-bio",
+                name: "University of Cambridge (UK)",
+                details: "Study at the birthplace of DNA research. High-intensity research-led teaching.",
+                cost: "$45,000",
+                test: "IELTS 7.5",
+                start: "October",
+                applyBy: "Oct 15, 2025",
+                location: "Cambridge, UK",
+                gift: "Gates Cambridge Scholarship",
+                partTime: "Allowed (20 Hours)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BA Biological Sciences", "MPhil Genetics"]
+            }
+        ]
+    },
+    {
+        course: "BSc / MSc Environmental Science & Sustainability",
+        unis: [
+            {
+                id: "ubc-env",
+                name: "University of British Columbia (Canada)",
+                details: "Global leader in ecology and environmental policy. Beautiful West Coast campus.",
+                cost: "$32,000",
+                test: "IELTS 6.5",
+                start: "Sept / Jan",
+                applyBy: "Jan 15, 2026",
+                location: "Vancouver, Canada",
+                gift: "International Major Entrance Award",
+                partTime: "20 Hours/Week",
+                postStudy: "3-Year PGWP",
+                allowWork: true,
+                programs: ["BSc Environmental Sciences", "MSc Sustainability"]
+            }
+        ]
+    },
+    {
+        course: "Psychology & Behavioral Sciences",
+        unis: [
+            {
+                id: "melb-psych",
+                name: "University of Melbourne (Australia)",
+                details: "Australia's top psychology program. Focus on clinical and cognitive research.",
+                cost: "$31,000",
+                test: "IELTS 7.0",
+                start: "Feb / July",
+                applyBy: "Oct 2025",
+                location: "Melbourne, Australia",
+                gift: "Melbourne Graduate Scholarships",
+                partTime: "48 Hours / Fortnight",
+                postStudy: "2-Year Stay-back",
+                allowWork: true,
+                programs: ["BSc Psychology", "Master of Clinical Psychology"]
+            },
+                  {
+                id: "utoronto-psych",
+                name: "University of Toronto (Canada)",
+                details: "Global leader in cognitive neuroscience and clinical psychology research.",
+                cost: "$42,000",
+                test: "IELTS 7.0",
+                start: "September",
+                applyBy: "January 15, 2026",
+                location: "Toronto, Canada",
+                gift: "Lester B. Pearson Scholarship",
+                partTime: "24 Hours (Off-campus)",
+                postStudy: "3-Year PGWP",
+                allowWork: true,
+                programs: ["BSc Psychology", "MA Child Study & Education"]
+            }
+        ]
+    },
+    {
+        course: "International Relations & Political Science",
+        unis: [
+            {
+                id: "sciencespo-ir",
+                name: "Sciences Po (France)",
+                details: "The most prestigious school for politics in France. Alumni include world leaders.",
+                cost: "$14,000",
+                test: "IELTS 7.0",
+                start: "September",
+                applyBy: "Feb 2026",
+                location: "Paris, France",
+                gift: "Emile Boutmy Scholarship",
+                partTime: "Allowed (20 Hours)",
+                postStudy: "1-Year Job Search",
+                allowWork: true,
+                programs: ["BA International Affairs", "MA Global Public Policy"]
+            }
+        ]
+    },
+    
+    {
+        course: "Biochemistry & Molecular Medicine",
+        unis: [
+            {
+                id: "harvard-biochem",
+                name: "Harvard University (USA)",
+                details: "Global leader in life sciences. Focus on chemical biology and molecular genetics.",
+                cost: "$58,000",
+                test: "IELTS 7.5",
+                start: "September",
+                applyBy: "December 1, 2025",
+                location: "Boston, USA",
+                gift: "PhD fully funded / Masters partial",
+                partTime: "Allowed (20 Hours)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Biochemistry", "MSc Molecular Biology", "PhD Chemical Biology"]
+            }
+        ]
+    },
+    {
+        course: "Medical Degree (MBBS / MD)",
+        unis: [
+            {
+                id: "oxford-med",
+                name: "University of Oxford (UK)",
+                details: "A traditional 6-year medical course. Highly competitive clinical training.",
+                cost: "$55,000",
+                test: "IELTS 7.5 / BMAT Required",
+                start: "October",
+                applyBy: "October 15, 2025",
+                location: "Oxford, UK",
+                gift: "Rhodes Scholarship (Selected)",
+                partTime: "Not Recommended (Intense)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["MBBS (Medicine)", "MSc Integrated Immunology"]
+            },
+            {
+                id: "charite-med",
+                name: "Charité – Universitätsmedizin Berlin (Germany)",
+                details: "One of Europe's largest university hospitals. Excellent for clinical research.",
+                cost: "$0 Tuition (Admin Fees Only)",
+                test: "German C1 Required",
+                start: "Oct / April",
+                applyBy: "July 15, 2026",
+                location: "Berlin, Germany",
+                gift: "DAAD Scholarships Available",
+                partTime: "Allowed (Hard for Med)",
+                postStudy: "18-Month Job Seeker",
+                allowWork: true,
+                programs: ["Staatsexamen Medizin (MD)", "MSc Medical Neurosciences"]
+            }
+        ]
+    },
+    {
+        course: "Defense, Security & Strategic Studies",
+        unis: [
+            {
+                id: "kcl-war",
+                name: "King's College London (UK)",
+                details: "The world-famous Department of War Studies. Covers geopolitics, intelligence, and strategy.",
+                cost: "$28,500",
+                test: "IELTS 7.0",
+                start: "September",
+                applyBy: "Rolling (Early Advised)",
+                location: "London, UK",
+                gift: "War Studies Departmental Award",
+                partTime: "Allowed (20 Hours)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BA War Studies", "MA International Security", "MA Intelligence & Strategy"]
+            },
+            {
+                id: "ndu-defense",
+                name: "National Defense University (USA)",
+                details: "Focuses on high-level military strategy and national security policy.",
+                cost: "$35,000",
+                test: "IELTS 7.0",
+                start: "August",
+                applyBy: "Varies by Program",
+                location: "Washington D.C., USA",
+                gift: "Sponsorship for Gov Officials",
+                partTime: "Restricted (Security)", // TRIGGER RED
+                postStudy: "None (Foreign Military)", // TRIGGER RED
+                allowWork: false,
+                programs: ["MA Strategic Security Studies"]
+            }
+        ]
+    },
+    {
+        course: "Language, Linguistics & Cultural Studies",
+        unis: [
+            {
+                id: "inalco-lang",
+                name: "INALCO (France)",
+                details: "The National Institute for Oriental Languages and Civilizations. Covers 100+ languages.",
+                cost: "$4,200",
+                test: "French B2 / IELTS 6.5",
+                start: "September",
+                applyBy: "April 2026",
+                location: "Paris, France",
+                gift: "Bourse du Gouvernement Français",
+                partTime: "20 Hours/Week",
+                postStudy: "1-Year Job Search (APS)",
+                allowWork: true,
+                programs: ["BA Arabic Studies", "MA Applied Linguistics", "MA Translation"]
+            }
+        ]
+    },
+    {
+        course: "Advanced Research (MRes / MPhil / PhD)",
+        unis: [
+            {
+                id: "cambridge-res",
+                name: "University of Cambridge (UK)",
+                details: "Focuses on independent investigation leading to a significant thesis contribution.",
+                cost: "$35,000 - $45,000",
+                test: "IELTS 7.5",
+                start: "Oct / Jan / April",
+                applyBy: "Dec 2025 (Funding Deadline)",
+                location: "Cambridge, UK",
+                gift: "Full Research Council Funding",
+                partTime: "Allowed (Highly Limited)",
+                postStudy: "3-Year Graduate Visa (PhD)", // Note: PhDs get 3 years, others 2
+                allowWork: true,
+                programs: ["MPhil by Research", "PhD (Various Fields)"]
+            }
+        ]
+    },
+   
+    {
+        course: "Nursing & Midwifery (BSc / MSc)",
+        unis: [
+            {
+                id: "kcl-nursing",
+                name: "King's College London (UK)",
+                details: "Ranked #1 in the UK for nursing. Students train in world-leading NHS hospitals.",
+                cost: "$34,500",
+                test: "IELTS 7.0 (Min 7.0 in all)",
+                start: "September",
+                applyBy: "January 2026",
+                location: "London, UK",
+                gift: "NHS Learning Support Fund",
+                partTime: "Allowed (20 Hours)",
+                postStudy: "2-Year Health & Care Visa",
+                allowWork: true,
+                programs: ["BSc Adult Nursing", "MSc Mental Health Nursing"]
+            }
+        ]
+    },
+    {
+        course: "Pharmaceutical Sciences & Drug Discovery",
+        unis: [
+            {
+                id: "nus-pharm",
+                name: "National University of Singapore (NUS)",
+                details: "Top-tier Asian program focused on pharmacology and clinical pharmacy.",
+                cost: "$32,000",
+                test: "IELTS 6.5",
+                start: "August",
+                applyBy: "March 2026",
+                location: "Singapore",
+                gift: "Tuition Grant Scheme",
+                partTime: "Not Allowed (Foreign Students)", // TRIGGER RED
+                postStudy: "1-Year Job Search Pass",
+                allowWork: false,
+                programs: ["BSc Pharmacy", "MSc Pharmaceutical Science"]
+            }
+        ]
+    },
+    
+       
+    {
+        course: "Sociology, Anthropology & Social Policy",
+        unis: [
+            {
+                id: "anu-soc",
+                name: "Australian National University (ANU)",
+                details: "Australia's top university for social research and global policy analysis.",
+                cost: "$33,000",
+                test: "IELTS 6.5",
+                start: "Feb / July",
+                applyBy: "Rolling Admissions",
+                location: "Canberra, Australia",
+                gift: "Chancellor's International Merit Scholarship",
+                partTime: "48 Hours / Fortnight",
+                postStudy: "2-Year Post-Study Work",
+                allowWork: true,
+                programs: ["Bachelor of Social Science", "Master of Anthropology"]
+            }
+        ]
+    },
+    {
+        course: "History, Philosophy & Religious Studies",
+        unis: [
+            {
+                id: "cambridge-hist",
+                name: "University of Cambridge (UK)",
+                details: "One of the most prestigious history faculties in the world. Exceptional archive access.",
+                cost: "$30,000",
+                test: "IELTS 7.5",
+                start: "October",
+                applyBy: "October 15, 2025",
+                location: "Cambridge, UK",
+                gift: "Gates Cambridge Scholarship",
+                partTime: "Allowed (Limited)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BA History", "MPhil Philosophy of Science"]
+            }
+        ]
+    },
+    {
+        course: "Criminology & Forensic Science",
+        unis: [
+            {
+                id: "griffith-crim",
+                name: "Griffith University (Australia)",
+                details: "Home to the largest criminology school in the Southern Hemisphere.",
+                cost: "$26,500",
+                test: "IELTS 6.5",
+                start: "Feb / July",
+                applyBy: "June 30, 2026",
+                location: "Brisbane, Australia",
+                gift: "International Student Excellence Award",
+                partTime: "Allowed (48h/fn)",
+                postStudy: "2-Year Stay-back",
+                allowWork: true,
+                programs: ["Bachelor of Criminology", "MSc Forensic Science"]
+            }
+        ]
+    },
+    {
+        course: "Education, Teaching & TESOL",
+        unis: [
+            {
+                id: "tcd-edu",
+                name: "Trinity College Dublin (Ireland)",
+                details: "Ireland's leading education department. Focus on inclusive education and literacy.",
+                cost: "$22,000",
+                test: "IELTS 6.5",
+                start: "September",
+                applyBy: "June 2026",
+                location: "Dublin, Ireland",
+                gift: "Global Excellence Scholarship",
+                partTime: "20 Hours/Week",
+                postStudy: "None (Requires Work Permit)", // TRIGGER RED
+                allowWork: true,
+                programs: ["Bachelor in Education", "M.Phil. in TESOL"]
+            }
+        ]
+    },
+    {
+        course: "Animation, Film & Media Production",
+        unis: [
+            {
+                id: "hudd-anim",
+                name: "University of Huddersfield (UK)",
+                details: "Award-winning program focusing on 3D animation and digital storytelling.",
+                cost: "$19,500",
+                test: "IELTS 6.0",
+                start: "Sept / Jan",
+                applyBy: "July 2026",
+                location: "Huddersfield, UK",
+                gift: "$2,000 Automatic Scholarship",
+                partTime: "Allowed (20 Hours)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BA Animation", "MA Film & TV Production"]
+            }
+        ]
+    },
+
+    {
+        course: "Artificial Intelligence & Robotics (BSc / MSc)",
+        unis: [
+            {
+                id: "cmu-ai",
+                name: "Carnegie Mellon University (USA)",
+                details: "The world's first AI degree. Focuses on deep learning, computer vision, and cognitive robotics.",
+                cost: "$60,500",
+                test: "IELTS 7.5 / GRE Required",
+                start: "August Only",
+                applyBy: "January 2026",
+                location: "Pittsburgh, USA",
+                gift: "Research Assistantships (Full Tuition)",
+                partTime: "Allowed (20 Hours)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BS in Artificial Intelligence", "MS in Robotics", "MS in Machine Learning"]
+            },
+            {
+                id: "hull-ai",
+                name: "University of Hull (UK)",
+                details: "Renowned Centre of Excellence for Data Science and Modelling. High industry placement rates.",
+                cost: "$21,000",
+                test: "IELTS 6.0",
+                start: "Sept / Jan",
+                applyBy: "June 2026",
+                location: "Hull, UK",
+                gift: "$4,000 Global Excellence Award",
+                partTime: "Allowed (20 Hours)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BSc Computer Science (AI)", "MSc Artificial Intelligence"]
+            }
+        ]
+    },
+    {
+        course: "Renewable Energy & Sustainable Systems",
+        unis: [
+            {
+                id: "uea-green",
+                name: "University of East Anglia (UK)",
+                details: "Specialized MSc in Data Science for Renewable Energy. Critical for the global 2030 net-zero goals.",
+                cost: "$23,500",
+                test: "IELTS 6.5",
+                start: "September",
+                applyBy: "July 2026",
+                location: "Norwich, UK",
+                gift: "Full-Fee Energy Scholarships",
+                partTime: "Allowed (20 Hours)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["MSc Data Science for Renewable Energy", "BEng Energy Engineering"]
+            }
+        ]
+    },
+    {
+        course: "Global Public Health & Epidemiology",
+        unis: [
+            {
+                id: "jhu-health",
+                name: "Johns Hopkins University (USA)",
+                details: "Ranked #1 globally for Public Health. Leading center for pandemic response and health policy.",
+                cost: "$65,000",
+                test: "IELTS 7.5 / TOEFL 100",
+                start: "August / January",
+                applyBy: "December 1, 2025",
+                location: "Baltimore, USA",
+                gift: "Bloomberg Fellowship (Full Ride)",
+                partTime: "On-campus Only",
+                postStudy: "3-Year STEM OPT", // Public health is often STEM listed here
+                allowWork: true,
+                programs: ["Master of Public Health (MPH)", "MSc in Epidemiology", "PhD in Health Policy"]
+            }
+        ]
+    },
+    {
+        course: "BSc / MSc Clinical Research & Pharmacology",
+        unis: [
+            {
+                id: "debrecen-med",
+                name: "University of Debrecen (Hungary)",
+                details: "High-quality European medical training. Popular for international students seeking clinical roles.",
+                cost: "$8,500 (Pharma) / $16,900 (Med)",
+                test: "Entrance Exam / IELTS 6.0",
+                start: "September",
+                applyBy: "May 31, 2026",
+                location: "Debrecen, Hungary",
+                gift: "Stipendium Hungaricum Scholarship",
+                partTime: "Not Allowed (Visa Rule)", // TRIGGER RED
+                postStudy: "9-Month Job Seeker", 
+                allowWork: false,
+                programs: ["MSc Clinical Research", "Doctor of Pharmacy", "MSc Food Safety"]
+            }
+        ]
+    },
+    {
+        course: "Agriculture & Food Technology",
+        unis: [
+            {
+                id: "fhsw-agri",
+                name: "South Westphalia University (Germany)",
+                details: "Specialized 'Data Science for Agricultural Management' program. Modernizing the food industry.",
+                cost: "$0 Tuition (Fees ~$300)",
+                test: "IELTS 6.5 / B2 German",
+                start: "October",
+                applyBy: "July 15, 2026",
+                location: "Soest, Germany",
+                gift: "Publicly funded education",
+                partTime: "120 Full Days / Year",
+                postStudy: "18-Month Job Seeker",
+                allowWork: true,
+                programs: ["BSc Data Science for Agriculture", "MSc Agricultural Management"]
+            }
+        ]
+    },
+
+    {
+        course: "Cybersecurity & Ethical Hacking",
+        unis: [
+            {
+                id: "qub-cyber",
+                name: "Queen's University Belfast (UK)",
+                details: "GCHQ-certified excellence center for network security.",
+                cost: 24000,
+                test: "IELTS 6.5",
+                start: "September",
+                applyBy: "June 2026",
+                location: "Belfast, UK",
+                gift: "International Office Scholarship",
+                partTime: "20h/Week",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BSc Cyber Security", "MSc Applied Cyber"]
+            }
+        ]
+    },
+   
+    
+   
+    {
+        course: "Engineering (Civil, Mech, EEE, Aero, Bio)",
+        unis: [
+            {
+                id: "delft-eng",
+                name: "TU Delft (Netherlands)",
+                details: "World-class engineering. Focus on sustainability and aerospace.",
+                cost: 21000,
+                test: "IELTS 7.0",
+                start: "September",
+                applyBy: "Jan 2026",
+                location: "Delft, Netherlands",
+                gift: "Excellence Scholarship",
+                partTime: "16h/Week",
+                postStudy: "1-Year Orientation Year",
+                allowWork: true,
+                programs: ["BSc Aerospace", "MSc Civil", "MSc Embedded Systems"]
+            }
+        ]
+    },
+    {
+        course: "Chemistry, Physics & Biochemistry",
+        unis: [
+            {
+                id: "mit-sci",
+                name: "MIT (USA)",
+                details: "Pushing the boundaries of quantum physics and molecular chemistry.",
+                cost: 60000,
+                test: "IELTS 7.5",
+                start: "September",
+                applyBy: "Jan 2026",
+                location: "Cambridge, USA",
+                gift: "PhD Fully Funded",
+                partTime: "20h/Week",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Physics", "MSc Chemistry", "PhD Biochemistry"]
+            }
+        ]
+    },
+    {
+        course: "Law (LLB/LLM) & International Relations",
+        unis: [
+            {
+                id: "lse-law",
+                name: "LSE (UK)",
+                details: "Global hub for legal theory and political science.",
+                cost: 32000,
+                test: "IELTS 7.5",
+                start: "September",
+                applyBy: "Jan 2026",
+                location: "London, UK",
+                gift: "LSE Bursary",
+                partTime: "20h/Week",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["LLB Law", "MA International Relations"]
+            }
+        ]
+    },
+    
+    {
+        course: "Architecture, Fine Arts & Fashion",
+        unis: [
+            {
+                id: "uca-arts",
+                name: "UCA (UK)",
+                details: "Creative specialist university. Focus on animation and design.",
+                cost: 19000,
+                test: "IELTS 6.0",
+                start: "September",
+                applyBy: "July 2026",
+                location: "Farnham, UK",
+                gift: "Portfolio Scholarship",
+                partTime: "20h/Week",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BA Fashion", "MA Architecture", "BA Animation"]
+            }
+        ]
+    },
+    {
+        course: "Fine Arts, Sketching & Illustration",
+        unis: [
+            {
+                id: "risd-art",
+                name: "Rhode Island School of Design (USA)",
+                details: "Global leader in visual arts. Focus on intensive sketching and classical drawing.",
+                cost: "$58,000",
+                test: "IELTS 7.0 / Portfolio",
+                start: "September",
+                applyBy: "Jan 2026",
+                location: "Providence, USA",
+                gift: "Presidential Scholarship",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BFA Illustration", "BFA Painting", "MFA Drawing"]
+            },
+            {
+                id: "arts-london",
+                name: "University of the Arts London (UK)",
+                details: "Specialized training in fashion sketching and digital illustration.",
+                cost: "$31,000",
+                test: "IELTS 6.5",
+                start: "September",
+                applyBy: "June 2026",
+                location: "London, UK",
+                gift: "UAL International Award",
+                partTime: "Allowed (20h)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BA Graphic Illustration", "BA Fashion Imaging"]
+            }
+        ]
+    },
+    {
+        course: "Performing Arts (Dance, Singing & Theatre)",
+        unis: [
+            {
+                id: "juilliard-perf",
+                name: "The Juilliard School (USA)",
+                details: "World-renowned conservatory for dance and vocal performance.",
+                cost: "$53,000",
+                test: "IELTS 7.0 / Audition",
+                start: "September",
+                applyBy: "Dec 2025",
+                location: "New York, USA",
+                gift: "Full-Tuition Scholarships",
+                partTime: "Allowed (20h)",
+                postStudy: "1-Year OPT",
+                allowWork: true,
+                programs: ["BFA Dance", "BMusic Vocal Performance"]
+            },
+            {
+                id: "rcm-sing",
+                name: "Royal College of Music (UK)",
+                details: "Top-ranked institution for classical singing and opera.",
+                cost: "$34,000",
+                test: "IELTS 6.5",
+                start: "September",
+                applyBy: "Jan 2026",
+                location: "London, UK",
+                gift: "RCM Award",
+                partTime: "Allowed (20h)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BMus Voice", "MPerf Vocal Performance"]
+            }
+        ]
+    },
+    {
+        course: "Mechanical, Robotics & Manufacturing Engineering",
+        unis: [
+            {
+                id: "eth-mech",
+                name: "ETH Zurich (Switzerland)",
+                details: "Global leader in precision engineering and robotics research.",
+                cost: "$1,500 per year",
+                test: "IELTS 7.0 / GRE",
+                start: "September",
+                applyBy: "Dec 2025",
+                location: "Zurich, Switzerland",
+                gift: "Excellence Scholarship",
+                partTime: "Allowed (15h)",
+                postStudy: "6-Month Job Seeker",
+                allowWork: true,
+                programs: ["BSc Mechanical Engineering", "MSc Robotics Systems"]
+            },
+            {
+                id: "gatech-mech",
+                name: "Georgia Tech (USA)",
+                details: "Top-tier US research uni focusing on thermal sciences and fluid mechanics.",
+                cost: "$31,000",
+                test: "IELTS 7.0 / GRE",
+                start: "August",
+                applyBy: "Jan 2026",
+                location: "Atlanta, USA",
+                gift: "GRA/GTA Positions",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Mechanical", "MS Manufacturing", "PhD Mechanical"]
+            }
+        ]
+    },
+    {
+        course: "Software Engineering & Cloud Computing",
+        unis: [
+            {
+                id: "stanford-swe",
+                name: "Stanford University (USA)",
+                details: "Silicon Valley hub. Focus on large-scale systems and software architecture.",
+                cost: "$62,000",
+                test: "IELTS 7.5 / GRE",
+                start: "September",
+                applyBy: "Jan 2026",
+                location: "Stanford, USA",
+                gift: "Knight-Hennessy Scholars",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Computer Science", "MSc Software Theory"]
+            },
+            {
+                id: "waterloo-swe",
+                name: "University of Waterloo (Canada)",
+                details: "Famous for the best co-op program. Students work at Top Tech firms while studying.",
+                cost: "$48,000",
+                test: "IELTS 7.0",
+                start: "September",
+                applyBy: "Feb 2026",
+                location: "Waterloo, Canada",
+                gift: "International Entrance Award",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year PGWP",
+                allowWork: true,
+                programs: ["BSE Software Engineering", "BCS Computer Science"]
+            }
+        ]
+    },
+    {
+        course: "Algorithms & Competitive Programming",
+        unis: [
+            {
+                id: "itmo-algo",
+                name: "ITMO University (Russia)",
+                details: "7-time ICPC World Champions. The global capital of competitive programming.",
+                cost: "$6,000",
+                test: "Entrance Exam",
+                start: "September",
+                applyBy: "July 2026",
+                location: "St. Petersburg, Russia",
+                gift: "Government Scholarship",
+                partTime: "Allowed (20h)",
+                postStudy: "180-Day Job Seeker",
+                allowWork: true,
+                programs: ["BSc Applied Math & Informatics", "MSc Advanced Algorithms"]
+            },
+            {
+                id: "tsinghua-cs",
+                name: "Tsinghua University (China)",
+                details: "Top-ranked for CS worldwide. High concentration of IOI gold medalists.",
+                cost: "$5,000",
+                test: "HSK / IELTS 7.0",
+                start: "September",
+                applyBy: "March 2026",
+                location: "Beijing, China",
+                gift: "CGS Scholarship",
+                partTime: "Limited (On-Campus)",
+                postStudy: "1-Year Visa",
+                allowWork: true,
+                programs: ["BSc Computer Science", "MSc Algorithms"]
+            }
+        ]
+    },
+    {
+        course: "Calculus, Analysis & Pure Mathematics",
+        unis: [
+            {
+                id: "cambridge-math",
+                name: "University of Cambridge (UK)",
+                details: "Home of the 'Tripos'. Famous for rigorous training in real and complex analysis.",
+                cost: "$42,000",
+                test: "IELTS 7.5 / STEP Exam",
+                start: "October",
+                applyBy: "Oct 2025",
+                location: "Cambridge, UK",
+                gift: "Cambridge Trust Scholarship",
+                partTime: "Allowed (20h)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BA Mathematics", "MASt Mathematical Statistics"]
+            },
+            {
+                id: "princeton-math",
+                name: "Princeton University (USA)",
+                details: "Global center for advanced calculus, topology, and number theory.",
+                cost: "$59,000",
+                test: "IELTS 7.5 / GRE Math",
+                start: "September",
+                applyBy: "Jan 2026",
+                location: "Princeton, USA",
+                gift: "Full Need-Based Aid",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Mathematics", "PhD Applied & Computational Math"]
+            }
+        ]
+    },
+    {
+        course: "Game Development & Interactive Media",
+        unis: [
+            {
+                id: "digipen-game",
+                name: "DigiPen Institute of Technology (USA)",
+                details: "Highly intensive C++ programming focus. Known for 'Nintendo' industry ties.",
+                cost: "$39,000",
+                test: "IELTS 7.0 / Portfolio",
+                start: "September",
+                applyBy: "April 2026",
+                location: "Redmond, USA",
+                gift: "Merit Scholarship",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Computer Science in Real-Time Simulation", "BA Game Design"]
+            },
+            {
+                id: "abertay-game",
+                name: "Abertay University (UK)",
+                details: "Ranked #1 in Europe for video game education. Strong focus on console programming.",
+                cost: "$22,000",
+                test: "IELTS 6.0",
+                start: "September",
+                applyBy: "July 2026",
+                location: "Dundee, Scotland",
+                gift: "Abertay International Scholarship",
+                partTime: "Allowed (20h)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BSc Computer Games Technology", "MSc Games Control"]
+            }
+        ]
+    },
+    {
+        course: "Cybersecurity & Kernel Programming",
+        unis: [
+            {
+                id: "cmu-cyber",
+                name: "Carnegie Mellon CyLab (USA)",
+                details: "Focus on protocol security, reverse engineering, and secure coding.",
+                cost: "$58,000",
+                test: "IELTS 7.5 / GRE",
+                start: "August",
+                applyBy: "Jan 2026",
+                location: "Pittsburgh, USA",
+                gift: "CyLab Assistantship",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["MSc Information Security", "MS Cyber Forensics"]
+            }
+        ]
+    },
+    {
+        course: "Data Science & Big Data Engineering",
+        unis: [
+            {
+                id: "ucb-data",
+                name: "UC Berkeley (USA)",
+                details: "World-class curriculum in data inference and machine learning systems.",
+                cost: "$46,000",
+                test: "IELTS 7.5 / GRE",
+                start: "August",
+                applyBy: "Jan 2026",
+                location: "Berkeley, USA",
+                gift: "Berkeley Fellowship",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["MIDS (Master of Data Science)", "BSc Data Science"]
+            }
+        ]
+    },
+    {
+        course: "Full-Stack Web Development & UI/UX",
+        unis: [
+            {
+                id: "nyu-web",
+                name: "New York University (USA)",
+                details: "Strong focus on interactive media, front-end architecture, and creative coding.",
+                cost: "$56,000",
+                test: "IELTS 7.5",
+                start: "September",
+                applyBy: "Jan 2026",
+                location: "New York, USA",
+                gift: "Tisch School Scholarship",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["MSc Interactive Telecommunications", "BSc Digital Media"]
+            },
+            {
+                id: "bc-web",
+                name: "British Columbia Inst. of Tech (Canada)",
+                details: "Highly practical 'hands-on' training in React, Node.js, and Cloud Deployment.",
+                cost: "$22,000",
+                test: "IELTS 6.5",
+                start: "Sept / Jan",
+                applyBy: "March 2026",
+                location: "Vancouver, Canada",
+                gift: "International Student Entrance Award",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year PGWP",
+                allowWork: true,
+                programs: ["Advanced Diploma in Web Development", "BSc Computer Systems"]
+            },
+            {
+                id: "kth-web",
+                name: "KTH Royal Institute (Sweden)",
+                details: "Focus on web scalability, security, and distributed systems architecture.",
+                cost: "$18,000",
+                test: "IELTS 7.0",
+                start: "August",
+                applyBy: "Jan 15, 2026",
+                location: "Stockholm, Sweden",
+                gift: "KTH Scholarship",
+                partTime: "Unlimited (as per visa)",
+                postStudy: "1-Year Job Seeker",
+                allowWork: true,
+                programs: ["MSc Interactive Media Technology", "BSc Computer Science"]
+            }
+        ]
+    },
+    {
+        course: "Quantum Computing & Information Science",
+        unis: [
+            {
+                id: "uwaterloo-quant",
+                name: "University of Waterloo (Canada)",
+                details: "Home to the Institute for Quantum Computing. Focus on quantum cryptography and hardware.",
+                cost: "$45,000",
+                test: "IELTS 7.5",
+                start: "September",
+                applyBy: "Feb 2026",
+                location: "Waterloo, Canada",
+                gift: "IQC Research Award",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year PGWP",
+                allowWork: true,
+                programs: ["MSc Quantum Information", "PhD Physics (Quantum)"]
+            },
+            {
+                id: "anu-quant",
+                name: "Australian National University (Australia)",
+                details: "Global leader in quantum optics and secure communications.",
+                cost: "$38,000",
+                test: "IELTS 7.0",
+                start: "Feb / July",
+                applyBy: "Dec 2025",
+                location: "Canberra, Australia",
+                gift: "Chancellor’s International Scholarship",
+                partTime: "48h / Fortnight",
+                postStudy: "3-Year Stay-back",
+                allowWork: true,
+                programs: ["Master of Science in Quantum Technology"]
+            }
+        ]
+    },
+    {
+        course: "Renewable Energy & Sustainable Systems",
+        unis: [
+            {
+                id: "dtu-energy",
+                name: "Technical University of Denmark (DTU)",
+                details: "World leader in Wind Energy and Smart Grid technology.",
+                cost: "$16,000",
+                test: "IELTS 6.5",
+                start: "September",
+                applyBy: "Jan 15, 2026",
+                location: "Lyngby, Denmark",
+                gift: "State Educational Grant (SU)",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year Job Seeker",
+                allowWork: true,
+                programs: ["MSc Wind Energy", "MSc Sustainable Energy"]
+            }
+        ]
+    },
+    {
+        course: "FinTech & Mathematical Finance",
+        unis: [
+            {
+                id: "ntu-fintech",
+                name: "NTU (Singapore)",
+                details: "Located in Asia's financial hub. Focus on Algotrading and Digital Banking.",
+                cost: "$35,000",
+                test: "IELTS 7.0 / GMAT",
+                start: "August",
+                applyBy: "March 2026",
+                location: "Singapore",
+                gift: "Nanyang Scholarship",
+                partTime: "Allowed (16h)",
+                postStudy: "1-Year Long Term Pass",
+                allowWork: true,
+                programs: ["MSc in Financial Technology", "MSc Financial Engineering"]
+            }
+        ]
+    },
+    {
+        course: "Culinary Arts & Food Science",
+        unis: [
+            {
+                id: "cordon-bleu",
+                name: "Le Cordon Bleu (France)",
+                details: "The world's most famous culinary school. Focus on French haute cuisine and pastry.",
+                cost: "$32,000",
+                test: "IELTS 5.5 / French B1",
+                start: "Jan / April / July",
+                applyBy: "May 2026",
+                location: "Paris, France",
+                gift: "International Student Scholarship",
+                partTime: "Allowed (20h)",
+                postStudy: "1-Year Job Seeker",
+                allowWork: true,
+                programs: ["Grand Diplôme", "Bachelor of Business in Culinary Arts"]
+            },
+            {
+                id: "cia-ny",
+                name: "Culinary Institute of America (USA)",
+                details: "The 'Harvard' of cooking schools. Focus on food business and advanced kitchen skills.",
+                cost: "$48,000",
+                test: "IELTS 6.0",
+                start: "Sept / Jan",
+                applyBy: "June 2026",
+                location: "New York, USA",
+                gift: "CIA Merit Scholarship",
+                partTime: "Allowed (20h)",
+                postStudy: "1-Year OPT",
+                allowWork: true,
+                programs: ["BPS Culinary Arts Management", "BPS Baking & Pastry Arts"]
+            },
+            {
+                id: "wageningen-food",
+                name: "Wageningen University (Netherlands)",
+                details: "World #1 for Food Science. Focus on food chemistry and sustainable production.",
+                cost: "$19,000",
+                test: "IELTS 6.5",
+                start: "September",
+                applyBy: "May 2026",
+                location: "Wageningen, Netherlands",
+                gift: "Orange Tulip Scholarship",
+                partTime: "Allowed (16h)",
+                postStudy: "1-Year Orientation Year",
+                allowWork: true,
+                programs: ["MSc Food Technology", "MSc Food Quality Management"]
+            }
+        ]
+    },
+    {
+        course: "Agriculture, Agritech & Sustainable Farming",
+        unis: [
+            {
+                id: "ucd-agri",
+                name: "UC Davis (USA)",
+                details: "Ranked #1 in the US for Agriculture. Focus on precision farming and viticulture.",
+                cost: "$44,000",
+                test: "IELTS 7.0",
+                start: "September",
+                applyBy: "Jan 2026",
+                location: "California, USA",
+                gift: "Global Undergraduate Award",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Agricultural Business", "MSc Precision Agriculture"]
+            },
+            {
+                id: "reading-agri",
+                name: "University of Reading (UK)",
+                details: "Global leader in food security and crop science. Strong focus on tropical agriculture.",
+                cost: "$26,000",
+                test: "IELTS 6.5",
+                start: "September",
+                applyBy: "June 2026",
+                location: "Reading, UK",
+                gift: "IFNH Scholarship",
+                partTime: "Allowed (20h)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BSc Agriculture", "MSc Food Security"]
+            },
+            {
+                id: "cornell-agri",
+                name: "Cornell University (USA)",
+                details: "Specializes in animal science and plant breeding. Home to world-class research farms.",
+                cost: "$62,000",
+                test: "IELTS 7.5",
+                start: "August",
+                applyBy: "Jan 2026",
+                location: "Ithaca, USA",
+                gift: "Tata Scholarship",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Plant Sciences", "MSc Animal Science"]
+            }
+        ]
+    },
+    {
+        course: "Film Editing, Post-Production & VFX",
+        unis: [
+            {
+                id: "afi-edit",
+                name: "American Film Institute (USA)",
+                details: "Consistently ranked #1. Intensive mentor-based program focused on narrative storytelling and high-end editing.",
+                cost: "$65,000",
+                test: "IELTS 7.0 / Portfolio",
+                start: "August",
+                applyBy: "Dec 2025",
+                location: "Los Angeles, USA",
+                gift: "AFI Conservatory Scholarships",
+                partTime: "Limited (Intensive)",
+                postStudy: "1-Year OPT",
+                allowWork: true,
+                programs: ["MFA in Editing"]
+            },
+            {
+                id: "nfts-edit",
+                name: "National Film & Television School (UK)",
+                details: "Widely regarded as the best film school in the UK. Direct links to BBC, Netflix, and Pinewood Studios.",
+                cost: "$38,000",
+                test: "IELTS 6.5",
+                start: "January",
+                applyBy: "June 2026",
+                location: "Beaconsfield, UK",
+                gift: "NFTS Bursary Fund",
+                partTime: "Allowed (20h)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["MA in Editing", "MA in Digital Effects"]
+            },
+            {
+                id: "vfs-edit",
+                name: "Vancouver Film School (Canada)",
+                details: "Fast-track 1-year program. Located in 'Hollywood North' with heavy focus on industry workflows.",
+                cost: "$35,000",
+                test: "IELTS 6.5",
+                start: "Every 2 Months",
+                applyBy: "Rolling",
+                location: "Vancouver, Canada",
+                gift: "VFS Talent Scholarships",
+                partTime: "Allowed (20h)",
+                postStudy: "Not PGWP eligible (Private)",
+                allowWork: true,
+                programs: ["Film Production (Editing Stream)"]
+            }
+        ]
+    },
+    {
+        course: "Photography, Photojournalism & Digital Imaging",
+        unis: [
+            {
+                id: "parsons-photo",
+                name: "Parsons School of Design (USA)",
+                details: "Located in the heart of NYC. World-class focus on fashion photography and experimental digital media.",
+                cost: "$55,000",
+                test: "IELTS 7.0 / Portfolio",
+                start: "August",
+                applyBy: "Jan 2026",
+                location: "New York, USA",
+                gift: "Parsons Merit Scholarship",
+                partTime: "Allowed (20h)",
+                postStudy: "1-Year OPT",
+                allowWork: true,
+                programs: ["BFA Photography", "MFA Photography"]
+            },
+            {
+                id: "eca-photo",
+                name: "Edinburgh College of Art (UK)",
+                details: "Renowned for documentary photography and fine art practice with world-class darkroom facilities.",
+                cost: "$29,000",
+                test: "IELTS 6.5",
+                start: "September",
+                applyBy: "June 2026",
+                location: "Edinburgh, Scotland",
+                gift: "ECA International Award",
+                partTime: "Allowed (20h)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BA (Hons) Photography", "MA Contemporary Art"]
+            },
+            {
+                id: "spos-photo",
+                name: "Spéos International Photo School (France)",
+                details: "Intensive professional programs in studio lighting and photojournalism. Partners with Magnum Photos.",
+                cost: "$30,000",
+                test: "IELTS 6.0",
+                start: "September / January",
+                applyBy: "Rolling",
+                location: "Paris / London",
+                gift: "Early Bird Discount",
+                partTime: "Allowed (20h)",
+                postStudy: "1-Year Job Seeker (France)",
+                allowWork: true,
+                programs: ["Creative Photography", "Photojournalism"]
+            }
+        ]
+    },
+    {
+        course: "Elite Global Research & Leadership",
+        unis: [
+            {
+                id: "stanford-global",
+                name: "Stanford University (USA)",
+                details: "The heart of Silicon Valley. Famous for entrepreneurship, technology, and producing more billion-dollar company founders than any other school.",
+                cost: "$62,000",
+                test: "IELTS 7.5 / SAT or ACT",
+                start: "September",
+                applyBy: "Jan 2026",
+                location: "Stanford, USA",
+                gift: "Full-Need Financial Aid",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Symbolic Systems", "MS Computer Science", "MBA"]
+            },
+            {
+                id: "eth-zurich",
+                name: "ETH Zurich (Switzerland)",
+                details: "Consistently the top-ranked university in continental Europe. Famous for being the alma mater of Albert Einstein.",
+                cost: "$1,500 (per year)",
+                test: "IELTS 7.0 / German C1",
+                start: "September",
+                applyBy: "Dec 2025",
+                location: "Zurich, Switzerland",
+                gift: "Excellence Scholarship (ESOP)",
+                partTime: "Allowed (15h)",
+                postStudy: "6-Month Job Seeker",
+                allowWork: true,
+                programs: ["BSc Mechanical Engineering", "MSc Quantum Engineering"]
+            },
+            {
+                id: "nus-singapore",
+                name: "National University of Singapore (NUS)",
+                details: "Ranked #1 in Asia. A global hub for research excellence and a top destination for students wanting to work in the Asian market.",
+                cost: "$30,000",
+                test: "IELTS 7.0",
+                start: "August",
+                applyBy: "Feb 2026",
+                location: "Singapore",
+                gift: "ASEAN Undergraduate Scholarship",
+                partTime: "Allowed (16h)",
+                postStudy: "1-Year LTVP",
+                allowWork: true,
+                programs: ["BComp Computer Science", "MSc Business Analytics"]
+            }
+        ]
+    },
+    {
+        course: "Computer Science & Engineering (CSE)",
+        unis: [
+            {
+                id: "mit-cse",
+                name: "MIT (USA)",
+                details: "The gold standard for CSE. Focus on the intersection of hardware, software, and complexity theory.",
+                cost: "$60,000",
+                test: "IELTS 7.5 / GRE",
+                start: "September",
+                applyBy: "Jan 2026",
+                location: "Cambridge, USA",
+                gift: "MIT Financial Aid",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Computer Science", "MEng Electrical Engineering & CS"]
+            },
+            {
+                id: "tsinghua-cse",
+                name: "Tsinghua University (China)",
+                details: "Consistently ranked #1 globally for CS research and engineering output.",
+                cost: "$5,000",
+                test: "IELTS 7.0 / HSK",
+                start: "September",
+                applyBy: "March 2026",
+                location: "Beijing, China",
+                gift: "Chinese Government Scholarship",
+                partTime: "Limited",
+                postStudy: "1-Year Visa",
+                allowWork: true,
+                programs: ["BSc Computer Science & Tech", "MSc Computer Science"]
+            },
+            {
+                id: "oxford-cse",
+                name: "University of Oxford (UK)",
+                details: "Deep focus on the mathematical foundations of computing and high-level system design.",
+                cost: "$44,000",
+                test: "IELTS 7.5 / MAT Exam",
+                start: "October",
+                applyBy: "Oct 2025",
+                location: "Oxford, UK",
+                gift: "Clarendon Fund",
+                partTime: "Allowed (20h)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BA Computer Science", "MSc Advanced Computer Science"]
+            },
+            {
+                id: "cmu-cse",
+                name: "Carnegie Mellon University (USA)",
+                details: "Ranked #1 for CS in many global lists. Famous for its stand-alone School of Computer Science and world-leading research in AI and Robotics.",
+                cost: "$62,000",
+                test: "IELTS 7.5 / GRE strongly recommended",
+                start: "August",
+                applyBy: "Dec 2025", 
+                location: "Pittsburgh, USA",
+                gift: "SCS Merit Scholarships",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Computer Science", "MS in Computer Science"]
+            },
+            {
+                id: "stanford-cse",
+                name: "Stanford University (USA)",
+                details: "Located in Silicon Valley. Known for turning engineering students into tech entrepreneurs. Strongest ties to Google, Apple, and Meta.",
+                cost: "$65,000",
+                test: "IELTS 7.5 / SAT/ACT",
+                start: "September",
+                applyBy: "Jan 2026",
+                location: "Stanford, USA",
+                gift: "Stanford Financial Aid",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Computer Science", "MS Computer Science (Specializations available)"]
+            },
+            {
+                id: "berkeley-cse",
+                name: "UC Berkeley (USA)",
+                details: "Consistently ranked in the top 3 globally. Home to the legendary EECS department and pioneers in RISC-V and open-source software.",
+                cost: "$45,000",
+                test: "IELTS 7.0",
+                start: "August",
+                applyBy: "Nov 30, 2025",
+                location: "Berkeley, USA",
+                gift: "Berkeley Undergraduate Scholarships",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BA Computer Science", "BSc Electrical Engineering & CS (EECS)"]
+            },
+            {
+                id: "eth-cse",
+                name: "ETH Zurich (Switzerland)",
+                details: "The top-ranked technical university in continental Europe. Famous for its research in Robotics, AI, and being Einstein's alma mater.",
+                cost: "$1,600 (Approx.)",
+                test: "IELTS 7.0 / GRE required for International",
+                start: "September",
+                applyBy: "Dec 15, 2025",
+                location: "Zurich, Switzerland",
+                gift: "ESOP Excellence Scholarship",
+                partTime: "Allowed (15h)",
+                postStudy: "6-Month Job Seeker",
+                allowWork: true,
+                programs: ["MSc Computer Science", "BSc Computer Science (German)"]
+            },
+            {
+                id: "utoronto-cse",
+                name: "University of Toronto (Canada)",
+                details: "Canada's leading CS program. Globally recognized as the 'Godfather of Deep Learning' (Geoffrey Hinton's home base).",
+                cost: "$46,000",
+                test: "IELTS 7.0",
+                start: "September",
+                applyBy: "Jan 15, 2026",
+                location: "Toronto, Canada",
+                gift: "Lester B. Pearson International",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year PGWP",
+                allowWork: true,
+                programs: ["BSc Computer Science", "MSc Applied Computing"]
+            },
+            {
+                id: "pku-cse",
+                name: "Peking University (China)",
+                details: "Ranked #15 globally for CS. Known for its intense academic rigor and elite recruitment by giants like Huawei, Tencent, and Alibaba.",
+                cost: "$6,500",
+                test: "IELTS 7.0 / HSK (for Chinese taught)",
+                start: "September",
+                applyBy: "March 2026",
+                location: "Beijing, China",
+                gift: "Chinese Government Scholarship",
+                partTime: "Limited",
+                postStudy: "1-Year Work Permit",
+                allowWork: true,
+                programs: ["BSc Computer Science", "MSc Software Engineering"]
+            },
+            {
+                id: "gatech-cse",
+                name: "Georgia Institute of Technology (USA)",
+                details: "One of the best values in the US. Famous for the 'Threads' curriculum which allows students to customize their CS degree path.",
+                cost: "$31,000",
+                test: "IELTS 7.0 / SAT",
+                start: "August",
+                applyBy: "Jan 2026",
+                location: "Atlanta, USA",
+                gift: "Hope Scholarship (Regional)",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Computer Science", "MS Computer Science"]
+            },
+            {
+                id: "uiuc-cse",
+                name: "University of Illinois Urbana-Champaign (USA)",
+                details: "A top-5 engineering school. Legendary for its contributions to the first web browsers and supercomputing.",
+                cost: "$40,000",
+                test: "IELTS 7.5",
+                start: "August",
+                applyBy: "Jan 5, 2026",
+                location: "Urbana, USA",
+                gift: "Illinois International Review",
+                partTime: "Allowed (20h)",
+                postStudy: "3-Year STEM OPT",
+                allowWork: true,
+                programs: ["BSc Computer Science", "MCS Professional Master's"]
+            },
+            // --- UK & EUROPE ---
+            {
+                id: "imperial-cse",
+                name: "Imperial College London (UK)",
+                details: "Often considered the 'MIT of the UK.' Deeply integrated with London's fintech and AI startup scene.",
+                cost: "$48,000",
+                test: "IELTS 7.0",
+                start: "October",
+                applyBy: "Jan 2026",
+                location: "London, UK",
+                gift: "President’s Undergraduate Scholarship",
+                partTime: "Allowed (20h)",
+                postStudy: "2-Year Graduate Visa",
+                allowWork: true,
+                programs: ["BEng Computing", "MSc Computing (Software Engineering)"]
+            },
+            {
+                id: "tum-cse",
+                name: "Technical University of Munich (Germany)",
+                details: "The 'Silicon Valley of Europe.' No tuition fees for many, but extremely competitive. Partnered with BMW, Siemens, and Google.",
+                cost: "$0 (Fees only: $300)",
+                test: "IELTS 6.5 / German B2 (Check program)",
+                start: "October",
+                applyBy: "May 2026",
+                location: "Munich, Germany",
+                gift: "DAAD Scholarships",
+                partTime: "Allowed (20h)",
+                postStudy: "18-Month Job Seeker",
+                allowWork: true,
+                programs: ["BSc Informatics", "MSc Robotics, Cognition, Intelligence"]
+            },
+     
+            {
+                id: "unsw-cse",
+                name: "UNSW Sydney (Australia)",
+                details: "Australia's top school for Engineering and Technology. Known for strong industry links and high graduate salaries.",
+                cost: "$32,000",
+                test: "IELTS 6.5",
+                start: "Feb / June / Sept",
+                applyBy: "Rolling",
+                location: "Sydney, Australia",
+                gift: "International Scientia Coursework Scholarship",
+                partTime: "Allowed (24h)",
+                postStudy: "2-4 Year Work Rights",
+                allowWork: true,
+            },
+            {
+                id: "ntu-cse",
+                name: "Nanyang Technological University (Singapore)",
+                details: "Ranked #1 in Asia for Citations. Heavy focus on AI, Smart City tech, and high-performance computing.",
+                cost: "$25,000",
+                test: "IELTS 6.5",
+                start: "August",
+                applyBy: "March 2026",
+                location: "Singapore",
+                gift: "NTU Science & Tech Scholarship",
+                partTime: "Allowed (16h)",
+                postStudy: "1-Year LTVP",
+                allowWork: true,
+                programs: ["Bachelor of Computing (Hons) in CS", "MSc in Data Science"]
+            },
+                  {
+                        id: "herts-cs",
+                        name: "University of Hertfordshire",
+                        details: "A practical course focused on software engineering and systems design, located just 25 minutes from London.",
+                        cost: "$19,800 per year",
+                        test: "IELTS 6.0 (Min 5.5 in all parts)",
+                        start: "September 2026",
+                        applyBy: "August 1, 2026",
+                        location: "Hatfield, UK",
+                        gift: "$1,500 Discount for first year",
+                        partTime: "Allowed (20 Hours per week)",
+                        postStudy: "2-Year Stay-back Permit",
+                        allowWork: true
+                    }
+        ]
+    },
+    {
+        course: "Computer Science & Information Technology (CSIT)",
+        unis: [
+            {
+                id: "uow-csit",
+                name: "University of Wollongong (Australia)",
+                details: "Consistently ranked in the top 300 for CS & IS. Offers specialized streams in Cyber Security, Digital Systems Security, and Big Data.",
+                cost: "$33,000",
+                test: "IELTS 6.5",
+                start: "Feb / July",
+                applyBy: "Rolling",
+                location: "Wollongong, Australia",
+                gift: "UOW Postgraduate Academic Excellence",
+                partTime: "Allowed (24h)",
+                postStudy: "2-4 Year Work Rights",
+                allowWork: true,
+                programs: ["Bachelor of Computer Science", "Bachelor of IT"]
+            },
+            {
+                id: "csu-it",
+                name: "Charles Sturt University (Australia)",
+                details: "Highly industry-focused. Offers specific majors in Web Development, Network Engineering, and Software Development.",
+                cost: "$28,000",
+                test: "IELTS 6.0",
+                start: "March / July / Nov",
+                applyBy: "Rolling",
+                location: "Sydney/Melbourne, Australia",
+                gift: "International Student Merit Scholarship",
+                partTime: "Allowed (24h)",
+                postStudy: "2-Year PGWP",
+                allowWork: true,
+                programs: ["Bachelor of Information Technology (CSIT focus)"]
+            },
+            {
+                id: "galway-csit",
+                name: "University of Galway (Ireland)",
+                details: "Renowned for its 'Professional Experience' program where students spend 6 months working in the tech industry during their degree.",
+                cost: "$22,000",
+                test: "IELTS 6.5",
+                start: "September",
+                applyBy: "May 2026",
+                location: "Galway, Ireland",
+                gift: "Global Achievement Scholarship",
+                partTime: "Allowed (20h)",
+                postStudy: "1-Year Stay Back",
+                allowWork: true,
+                programs: ["BSc Computer Science & Information Technology"]
+            },
+            {
+        id: "ucl-csit",
+        name: "University College London (UK)",
+        details: "Ranked #1 in Europe for CS. Their programs emphasize the application of computer science to real-world industrial and commercial problems.",
+        cost: "$42,000",
+        test: "IELTS 7.0 / GRE (some masters)",
+        start: "September",
+        applyBy: "Jan 2026",
+        location: "London, UK",
+        gift: "UCL Global Masters Scholarship",
+        partTime: "Allowed (20h)",
+        postStudy: "2-Year Graduate Visa",
+        allowWork: true,
+        programs: ["BSc Computer Science", "MSc Information Security"]
+    },
+    {
+        id: "delft-it",
+        name: "Delft University of Technology (Netherlands)",
+        details: "Top-tier Dutch technical university. Focuses on 'Digital Systems'—the core of CSIT, combining hardware, software, and networking.",
+        cost: "$21,000",
+        test: "IELTS 7.0",
+        start: "September",
+        applyBy: "Jan 15, 2026",
+        location: "Delft, Netherlands",
+        gift: "Justus & Louise van Effen Excellence",
+        partTime: "Allowed (16h)",
+        postStudy: "1-Year Orientation Year",
+        allowWork: true,
+        programs: ["BSc Computer Science & Engineering", "MSc Computer Science"]
+    },
+    {
+        id: "dcu-csit",
+        name: "Dublin City University (Ireland)",
+        details: "Ranked #1 in Ireland for Graduate Employment. Famous for its 'INTRA' work placement where students work in tech for 6-8 months.",
+        cost: "$18,000",
+        test: "IELTS 6.5",
+        start: "September",
+        applyBy: "July 2026",
+        location: "Dublin, Ireland",
+        gift: "DCU International Merit Scholarship",
+        partTime: "Allowed (20h)",
+        postStudy: "1-Year (BSc) / 2-Year (MSc)",
+        allowWork: true,
+        programs: ["BSc in Computer Science", "MSc in Computing (Specialist Tracks)"]
+    },
+    {
+        id: "waterloo-csit",
+        name: "University of Waterloo (Canada)",
+        details: "North America's largest co-op program. Students rotate between 4 months of study and 4 months of paid work at top tech companies.",
+        cost: "$48,000",
+        test: "IELTS 7.5",
+        start: "September",
+        applyBy: "Feb 2026",
+        location: "Waterloo, Canada",
+        gift: "International Student Entrance Excellence",
+        partTime: "Allowed (20h)",
+        postStudy: "3-Year PGWP",
+        allowWork: true,
+        programs: ["BCS Computer Science", "BMath Information Technology Management"]
+    },
+    {
+        id: "purdue-cit",
+        name: "Purdue University (USA)",
+        details: "A world leader in 'Computer & Information Technology' (CIT). Known for practical, hands-on labs in networking and systems security.",
+        cost: "$31,000",
+        test: "IELTS 6.5 / SAT",
+        start: "August",
+        applyBy: "Jan 15, 2026",
+        location: "West Lafayette, USA",
+        gift: "Purdue Trustee Scholarship",
+        partTime: "Allowed (20h)",
+        postStudy: "3-Year STEM OPT",
+        allowWork: true,
+        programs: ["BSc Computer & Information Technology", "MS IT"]
+    },
+    {
+        id: "nus-it",
+        name: "National University of Singapore (Singapore)",
+        details: "Consistently ranked Top 15 globally. Its 'Information Systems' and 'Computer Science' degrees are highly integrated with Asia's finance hub.",
+        cost: "$28,000",
+        test: "IELTS 7.0 / GRE",
+        start: "August",
+        applyBy: "Feb 2026",
+        location: "Singapore",
+        gift: "ASEAN Undergraduate Scholarship",
+        partTime: "Allowed (16h)",
+        postStudy: "1-Year LTVP",
+        allowWork: true,
+        programs: ["BComp in Information Systems", "MSc in Computing"]
+    },
+    {
+        id: "monash-it",
+        name: "Monash University (Australia)",
+        details: "Home to the only dedicated 'Faculty of Information Technology' in the Group of Eight. Huge focus on Human-Computer Interaction.",
+        cost: "$34,000",
+        test: "IELTS 6.5",
+        start: "Feb / July",
+        applyBy: "Rolling",
+        location: "Melbourne, Australia",
+        gift: "Monash International Merit Scholarship",
+        partTime: "Allowed (24h)",
+        postStudy: "2-4 Year Work Rights",
+        allowWork: true,
+        programs: ["Bachelor of IT", "Master of Business Information Systems"]
+    }
+        ]
+    },
+        
+    
+];
+        let savedIds = JSON.parse(localStorage.getItem('gsgsSavedIds')) || [];
+        let onlyShowSaved = false;
+
+function render() {
+    
+    const area = document.getElementById('displayArea');
+    let html = '';
+
+    db.forEach((item, iIdx) => {
+        const visibleUnis = onlyShowSaved
+            ? item.unis.filter(u => savedIds.includes(u.id))
+            : item.unis;
+
+        if (visibleUnis.length > 0) {
+            html += `
+            <div class="course-row" id="row-${iIdx}">
+                <div class="course-name-btn" onclick="toggle('list-${iIdx}', 'row-${iIdx}')">
+                    ${item.course}
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div id="list-${iIdx}" class="uni-list" style="display: ${onlyShowSaved ? 'block' : 'none'}">
+                    ${visibleUnis.map(u => {
+                        const isSaved = savedIds.includes(u.id);
+                        
+                        // SEPARATE LOGIC FOR EACH CARD
+                        // Card 1: Part-time Work logic
+                        const isWorkRestricted = (u.allowWork === false);
+
+                        // Card 2: Stay-back Permit logic (Check for No/None/0)
+                        const isStayBackRestricted = /no|none|0/i.test(u.postStudy);
+
+                        return `
+                        <div id="label-${u.id}" class="uni-item-name" onclick="toggleUniBox('${u.id}')">
+                            <span>${u.name}</span>
+                            ${isSaved ? '<i class="fas fa-bookmark" style="color:var(--accent)"></i>' : ''}
+                        </div>
+
+                        <div id="box-${u.id}" class="overview-box">
+                            <div class="box-title">University Information Overview</div>
+
+                            <p class="description-text">${u.details}</p>
+
+                            <div class="info-grid">
+                                <div class="info-card">
+                                    <label>Yearly Fee (USD)</label>
+                                    <span>${u.cost}</span>
+                                </div>
+                                <div class="info-card">
+                                    <label>IELTS Score</label>
+                                    <span>${u.test}</span>
+                                </div>
+                                <div class="info-card">
+                                    <label>When it Starts</label>
+                                    <span>${u.start}</span>
+                                </div>
+                                <div class="info-card">
+                                    <label>Last Date to Apply</label>
+                                    <span>${u.applyBy}</span>
+                                </div>
+                                <div class="info-card">
+                                    <label>Campus Location</label>
+                                    <span>${u.location}</span>
+                                </div>
+                                <div class="info-card">
+                                    <label>Scholarships</label>
+                                    <span>${u.gift}</span>
+                                </div>
+
+                                <div class="info-card ${isWorkRestricted ? 'no-work' : ''}">
+                                    <label>Jobs While Studying</label>
+                                    <span>${u.allowWork ? u.partTime : 'Not Allowed'}</span>
+                                </div>
+
+                                <div class="info-card ${isStayBackRestricted ? 'no-work' : ''}">
+                                    <label>Stay-back Permit</label>
+                                    <span>${u.postStudy}</span>
+                                </div>
+                            </div>
+
+                            <div class="other-programs">
+                                <div class="other-programs-title">Other Programs Offered</div>
+                                <div id="programs-${u.id}" class="other-programs-list">
+                                    ${u.programs ? u.programs.map(p => `• ${p}`).join('<br>') : 'No data available'}
+                                </div>
+                            </div>
+
+                            <div class="actions">
+                                <button class="btn btn-save ${isSaved ? 'active' : ''}" onclick="saveToggle('${u.id}')">
+                                    <i class="fas fa-bookmark"></i>
+                                    ${isSaved ? 'SHORTLISTED' : 'SAVE TO LIST'}
+                                </button>
+                                <a href="sop-builder.html" class="btn btn-green">WRITE MY SOP</a>
+                                <a href="visa-guide.html" class="btn btn-outline">VISA GUIDE</a>
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>`;
+        }
+    });
+
+    area.innerHTML = html || '<p style="text-align:center; padding:50px; color:var(--text-gray);">No saved courses found.</p>';
+
+    // Re-attach "Other Programs" click listeners
+    document.querySelectorAll('.other-programs-title').forEach(title => {
+        title.onclick = function(e) {
+            e.stopPropagation();
+            const list = this.nextElementSibling;
+            list.style.display = list.style.display === 'block' ? 'none' : 'block';
+        };
+    });
+}
+            
+function searchFunction() {
+    const input = document.getElementById('uniSearch').value.toLowerCase();
+    const courseRows = document.querySelectorAll('.course-row');
+
+    courseRows.forEach((row, rowIdx) => {
+        const courseName = row.querySelector('.course-name-btn').innerText.toLowerCase();
+        let rowHasMatch = false;
+
+        const uniItems = row.querySelectorAll('.uni-item-name');
+
+        uniItems.forEach(label => {
+            const uniId = label.id.split('-')[1];
+            const uniBox = document.getElementById('box-' + uniId);
+
+            const uniName = label.querySelector('span').innerText.toLowerCase();
+            const uniDetails = uniBox ? uniBox.querySelector('.description-text').innerText.toLowerCase() : '';
+
+            // ✅ Match if input is in course name OR uni name OR uni details
+            if (courseName.includes(input) || uniName.includes(input) || uniDetails.includes(input)) {
+                label.style.display = ''; // show the uni
+                if (uniBox) uniBox.style.display = 'block'; // open its box
+                rowHasMatch = true;
+            } else {
+                label.style.display = 'none';
+                if (uniBox) uniBox.style.display = 'none';
+            }
+        });
+
+        // Show the course row only if it matches or any university matches
+        row.style.display = rowHasMatch ? '' : 'none';
+    });
+}
+
+
+
+
+
+
+function toggle(listId, rowId) {
+    const list = document.getElementById(listId);
+    const row = document.getElementById(rowId);
+    
+    // Toggle the display
+    const isHidden = list.style.display === "none" || list.style.display === "";
+    list.style.display = isHidden ? "block" : "none";
+    
+    // Toggle the rotation class on the parent row
+    row.classList.toggle('active-row', isHidden);
+}
+
+        function toggleUniBox(uniId) {
+            const box = document.getElementById('box-' + uniId);
+            const label = document.getElementById('label-' + uniId);
+            const isOpening = box.style.display !== "block";
+
+            box.style.display = isOpening ? "block" : "none";
+
+            if (isOpening) {
+                label.classList.add('active-uni');
+            } else {
+                label.classList.remove('active-uni');
+            }
+        }
+
+        function saveToggle(id) {
+            if (savedIds.includes(id)) {
+                savedIds = savedIds.filter(sid => sid !== id);
+            } else {
+                savedIds.push(id);
+            }
+            localStorage.setItem('gsgsSavedIds', JSON.stringify(savedIds));
+            render();
+        }
+
+        function toggleSavedFilter() {
+            onlyShowSaved = !onlyShowSaved;
+            document.getElementById('filterSaved').classList.toggle('filtering');
+            render();
+        }
+
+        render();
+    </script>
+</body>
+</html>
