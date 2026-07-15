@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        // Security Guard: Check if a user is logged in
+        const activeUser = JSON.parse(localStorage.getItem('currentUser'));
+
+        if (!activeUser) {
+            // If no user is found in memory, block access and send them back to login
+            alert("Access Denied! Please login to your GSGS account first.");
+            window.location.href = 'index.html';
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Scholarship Intelligence</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --accent: #00f2ff;
+            --bg: #05070a;
+            --surface: rgba(13, 17, 23, .88);
+            --border: rgba(255, 255, 255, .08);
+            --text-dim: #9ba1a6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif
+        }
+
+        body {
+
+            background:
+                linear-gradient(rgba(5, 5, 5, 0.75), rgba(0, 0, 0, 0.75)),
+                url("https://i.pinimg.com/736x/94/99/e5/9499e521219dd85edb883b72045d51d7.jpg");
+            background-size: cover;
+            background-position: center 80%;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background: #0d1117;
+            border-right: 1px solid var(--border);
+            padding: 40px 24px;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 50px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-link {
+            display: flex;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            color: var(--text-dim);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-link.active,
+        .nav-link:hover {
+            background: rgba(255, 255, 255, .05);
+            color: var(--accent);
+        }
+
+        /* MAIN */
+        .main {
+            flex: 1;
+            padding: 40px 60px;
+            overflow-y: auto;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+            font-weight: 700;
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .hub-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .hub-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        .hub-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--accent);
+        }
+
+        .hub-card i {
+            font-size: 30px;
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        /* LIST */
+        .scholar-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .scholar-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .scholar-item:hover {
+            transform: translateX(6px);
+        }
+
+        /* DOSSIER */
+        #overlay {
+            position: fixed;
+            inset: 0;
+            background: #05070a;
+            z-index: 999;
+            display: none;
+            overflow-y: auto;
+            padding: 60px 10%;
+        }
+
+        .section {
+            margin-bottom: 35px;
+        }
+
+        .label {
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .text {
+            color: #ced4da;
+            line-height: 1.75;
+            font-size: 16px;
+        }
+
+        .apply {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            padding: 30px;
+            border-radius: 20px;
+        }
+
+        .apply a {
+            display: block;
+            background: var(--accent);
+            color: #000;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 800;
+            text-align: center;
+            text-decoration: none;
+        }
+
+
+        #countrySearch {
+            padding: 12px 16px;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            background: var(--surface);
+            color: #fff;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #countrySearch::placeholder {
+            color: var(--text-dim);
+        }
+
+        #countrySearch:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+            background: rgba(13, 17, 23, 0.95);
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div class="logo"><i class="fas fa-graduation-cap"></i> GSGS Intelligence</div>
+
+        <a href="index.html" class="nav-link" id="dashboardBtn">
+            <i class="fas fa-home"></i> Dashboard
+        </a>
+
+        <a href="universities.html" class="nav-link" id="universityBtn">
+            <i class="fas fa-university"></i> Universities
+        </a>
+        <a href="course-finder.html" class="nav-link" id="universityBtn">
+            <i class="fas fa-book"></i> course finder
+        </a>
+        <a href="sop-builder.html" class="nav-link" id="sopBtn">
+            <i class="fas fa-file-alt"></i> SOP Builder
+        </a>
+
+        <a href="scholarship.html" class="nav-link active" id="scholarBtn">
+            <i class="fas fa-graduation-cap"></i> Scholarship Hub
+        </a>
+        <a href="financial-guidance.html" class="nav-link " id="scholarBtn">
+            <i class="fas fa-hand-holding-usd"></i> financial-guidance
+        </a>
+        <a href="visa-guide.html" class="nav-link " id="scholarBtn">
+            <i class="fas fa-passport"></i> visa-guide
+        </a>
+        <a href="career-support.html" class="nav-link " id="scholarBtn">
+            <i class="fas fa-briefcase"></i>career-support
+        </a>
+
+    </aside>
+
+
+
+    <main class="main">
+        <button id="backBtn" class="back-btn" onclick="renderHub()">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
+
+        <h1>Global Scholarship Intelligence</h1>
+        <p style="color:var(--text-dim);margin:15px 0 30px">
+            Detailed academic guidance on major international scholarships.
+        </p>
+
+        <!-- SEARCH BAR -->
+        <input type="text" id="countrySearch" placeholder="Search country..."
+            style="padding:12px 16px; width:100%; max-width:400px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px; background:var(--surface); color:#fff; outline:none;">
+
+        <div id="content" class="hub-grid"></div>
+    </main>
+
+
+    <!-- DOSSIER -->
+    <div id="overlay">
+        <i class="fas fa-times fa-2x" style="float:right;cursor:pointer" onclick="closeOverlay()"></i>
+        <h1 id="d-name" style="margin-bottom:30px"></h1>
+
+        <div class="section">
+            <div class="label">Category</div>
+            <div id="d-category" class="text"></div>
+        </div>
+
+        <div class="section">
+            <div class="label">Target Students</div>
+            <div id="d-audience" class="text"></div>
+        </div>
+
+        <div class="section">
+            <div class="label">Why This Scholarship Is Important</div>
+            <div id="d-reason" class="text"></div>
+        </div>
+
+        <div class="section">
+            <div class="label">Program Overview</div>
+            <div id="d-summary" class="text"></div>
+        </div>
+
+        <div class="section">
+            <div class="label">Eligibility Requirements</div>
+            <div id="d-eligible" class="text"></div>
+        </div>
+
+        <div class="apply">
+            <div class="label">Financial Coverage</div>
+            <p id="d-funds" class="text"></p>
+            <a id="d-link" target="_blank">Official Website</a>
+        </div>
+    </div>
+
+    <script>
+        const db = {
+            afghanistan: [{
+                id: 'af1',
+                name: 'Chevening Scholarship',
+                category: 'Master’s Degree Programs (UK)',
+                audience: 'Talented Afghan graduates and early career professionals with leadership potential.',
+                reason: 'The Chevening Scholarship is a prestigious UK government program funded by the Foreign, Commonwealth & Development Office, aimed at developing future global leaders by offering fully funded postgraduate study in the United Kingdom. It provides not only financial support but also access to an influential global network of alumni and professional contacts.',
+                summary: 'This fully funded scholarship enables Afghan students to pursue a one‑year Master’s degree at any UK university. In addition to covering tuition, it provides a monthly stipend, travel costs and allowances for academic and living expenses, and opportunities for professional development and networking. The program is highly competitive and valued for its international recognition and long‑term impact on careers. ',
+                eligible: [
+                    'Hold a bachelor’s degree equivalent to a UK undergraduate degree',
+                    'At least two years of work experience',
+                    'Demonstrated leadership potential',
+                    'Intent to return to Afghanistan after studies'
+                ],
+                funds: 'Full tuition fees, monthly living allowance, travel costs to and from the UK, visa costs and additional allowances.',
+                link: 'https://www.chevening.org/' // official
+            },
+            {
+                id: 'af2',
+                name: 'Fulbright Foreign Student Program',
+                category: 'Master’s & PhD Programs (USA)',
+                audience: 'Afghan students seeking graduate or doctoral study at accredited universities in the United States.',
+                reason: 'The Fulbright Program is one of the most prestigious international educational exchange programs funded by the U.S. Department of State. It emphasizes academic excellence, cross‑cultural exchange and leadership development, giving Afghan students access to world‑class education and global networks.',
+                summary: 'Fulbright scholarships support Afghan students to pursue master’s or doctoral degrees in the United States. The program covers tuition, living costs, airfare, health insurance and other related expenses, and encourages scholars to engage in academic and cultural exchange activities during their studies. Acceptance into Fulbright is highly competitive.',
+                eligible: [
+                    'Bachelor’s degree or its equivalent',
+                    'Academic excellence and strong research or study proposal',
+                    'English language proficiency (TOEFL/IELTS or equivalent)',
+                    'Leadership potential and community engagement'
+                ],
+                funds: 'Full tuition, airfare, living stipend, health insurance and related academic costs.',
+                link: 'https://foreign.fulbrightonline.org/'
+            },
+            {
+                id: 'af3',
+                name: 'DAAD Scholarships',
+                category: 'Graduate & PhD Programs (Germany)',
+                audience: 'Afghan graduates aiming to study or conduct research in Germany.',
+                reason: 'The DAAD (German Academic Exchange Service) is the largest funding organization supporting international academic exchange for students and researchers. Its scholarships are known for academic rigor, extensive support and opportunities across sciences, engineering, humanities and social sciences.',
+                summary: 'DAAD scholarships allow Afghan students to pursue postgraduate or doctoral degrees at German universities. The funding includes a monthly stipend, health insurance, travel allowance and additional research support where applicable. Programs may be taught in English or German depending on the institution and field of study.',
+                eligible: [
+                    'Bachelor’s or equivalent degree (depending on program)',
+                    'Strong academic qualifications',
+                    'Language proficiency according to program requirements (English/German)',
+                    'Clear academic or research objective'
+                ],
+                funds: 'Monthly stipend, health insurance, travel allowance and sometimes research grants.',
+                link: 'https://www.daad.de/'
+            },
+            {
+                id: 'af4',
+                name: 'Australia Awards Scholarships',
+                category: 'Postgraduate Programs (Australia)',
+                audience: 'Afghan students from developing communities seeking to study in Australia.',
+                reason: 'Australia Awards Scholarships are long‑term development awards funded by the Australian government. They aim to strengthen human resource capacity in developing countries by offering education and training that can be applied to national development.',
+                summary: 'These scholarships enable Afghan students to undertake postgraduate study at Australian universities in fields that support economic and social development. The program also includes leadership and professional development, connecting scholars with networks that enhance their post‑study impact in their home communities.',
+                eligible: [
+                    'Citizenship of an eligible country such as Afghanistan',
+                    'Relevant academic background for chosen program',
+                    'Commitment to returning and contributing to national development after study',
+                    'Meet English language requirements'
+                ],
+                funds: 'Tuition fees, travel costs, living allowance, health insurance, and some pre‑departure support.',
+                link: 'https://www.dfat.gov.au/aid/topics/investment‑priorities/education‑health/australia‑awards'
+            },
+            {
+                id: 'af5',
+                name: 'Türkiye Scholarships (Turkiye Burslari)',
+                category: 'Undergraduate, Graduate & PhD Programs (Turkey)',
+                audience: 'Afghan students of all academic levels interested in studying in Turkey.',
+                reason: 'Turkiye Burslari is a government‑funded scholarship offering comprehensive support for international students to pursue higher education in Turkey. It is known for its inclusive selection, covering undergraduate through doctoral studies across diverse fields.',
+                summary: 'This scholarship covers full tuition fees, free accommodation, monthly stipend, health insurance and Turkish language training if needed. It is open to Afghan applicants and provides an integrated academic experience in Turkish universities, with opportunities for cultural exchange and career development.',
+                eligible: [
+                    'Academic qualifications appropriate for chosen level (UG/PG/PhD)',
+                    'Strong academic records',
+                    'Satisfy age limits and language requirements',
+                    'Submit required documents within application deadlines'
+                ],
+                funds: 'Full tuition, free accommodation, monthly stipend, health insurance and language course as applicable.',
+                link: 'https://www.turkiyeburslari.gov.tr/'
+            }
+            ],
+            albania: [
+                {
+                    id: 'al1',
+                    name: 'Erasmus+ Master Loans',
+                    category: 'Master’s Degree Programs (Europe)',
+                    audience: 'Albanian students seeking a full-time master’s program in European universities.',
+                    reason: 'Erasmus+ loans provide financial support for tuition and living costs to encourage mobility and higher education across Europe.',
+                    summary: 'Students can take loans to cover tuition fees and living expenses for a one- or two-year master’s program at any participating European university.',
+                    eligible: [
+                        'Citizen of Albania',
+                        'Bachelor’s degree or equivalent',
+                        'Acceptance into a European master’s program'
+                    ],
+                    funds: 'Loan covering tuition fees and living expenses; repayment after graduation.',
+                    link: 'https://erasmus-plus.ec.europa.eu/'
+                },
+                {
+                    id: 'al2',
+                    name: 'Chevening Scholarships',
+                    category: 'Master’s Degree Programs (UK)',
+                    audience: 'High-achieving Albanian graduates with leadership potential.',
+                    reason: 'UK government scholarships to develop future leaders and professionals.',
+                    summary: 'Fully funded one-year master’s program in the UK with monthly stipend and travel allowance.',
+                    eligible: [
+                        'Bachelor’s degree',
+                        'Leadership experience',
+                        'Return to Albania after study'
+                    ],
+                    funds: 'Tuition, living allowance, airfare, visa, and other allowances.',
+                    link: 'https://www.chevening.org/'
+                },
+                {
+                    id: 'al3',
+                    name: 'DAAD Scholarships',
+                    category: 'Master’s & PhD Programs (Germany)',
+                    audience: 'Albanian graduates seeking postgraduate or doctoral study in Germany.',
+                    reason: 'Supports academic excellence and research development.',
+                    summary: 'Fully funded scholarships including monthly stipend, travel and research support for study in Germany.',
+                    eligible: [
+                        'Bachelor’s or equivalent',
+                        'Strong academic records',
+                        'Language proficiency (English/German)'
+                    ],
+                    funds: 'Monthly stipend, health insurance, travel allowance.',
+                    link: 'https://www.daad.de/'
+                },
+                {
+                    id: 'al4',
+                    name: 'Australia Awards Scholarships',
+                    category: 'Postgraduate Programs (Australia)',
+                    audience: 'Albanian students from developing communities seeking education abroad.',
+                    reason: 'Promotes development through higher education and leadership skills.',
+                    summary: 'Covers tuition, living expenses, travel, health insurance, and leadership development programs.',
+                    eligible: [
+                        'Citizenship of Albania',
+                        'Bachelor’s degree',
+                        'Commitment to return home after study'
+                    ],
+                    funds: 'Full tuition, travel costs, living allowance, health insurance.',
+                    link: 'https://www.dfat.gov.au/people-to-people/australia-awards'
+                },
+                {
+                    id: 'al5',
+                    name: 'Turkiye Scholarships',
+                    category: 'Undergraduate & Postgraduate (Turkey)',
+                    audience: 'Albanian students applying for full-time study in Turkey.',
+                    reason: 'Comprehensive Turkish government scholarship for international students.',
+                    summary: 'Covers full tuition, accommodation, monthly stipend, health insurance, and Turkish language courses if needed.',
+                    eligible: [
+                        'Academic qualifications for level of study',
+                        'Strong academic performance',
+                        'Meet age and language requirements'
+                    ],
+                    funds: 'Full tuition, free accommodation, stipend, health insurance, language course.',
+                    link: 'https://www.turkiyeburslari.gov.tr/'
+                }
+            ],
+
+            algeria: [
+                {
+                    id: 'dz1',
+                    name: 'Erasmus+ Scholarships',
+                    category: 'Master’s Programs (Europe)',
+                    audience: 'Algerian students pursuing higher education in European universities.',
+                    reason: 'Promotes mobility, cross-cultural education, and higher education opportunities.',
+                    summary: 'Financial support for tuition and living costs for eligible master’s programs across Europe.',
+                    eligible: [
+                        'Algerian nationality',
+                        'Bachelor’s degree',
+                        'Admission to a European master’s program'
+                    ],
+                    funds: 'Tuition coverage, living expenses, loan or grant.',
+                    link: 'https://erasmus-plus.ec.europa.eu/'
+                },
+                {
+                    id: 'dz2',
+                    name: 'Chevening Scholarships',
+                    category: 'Master’s Programs (UK)',
+                    audience: 'Algerian graduates with leadership potential and strong academic record.',
+                    reason: 'UK government program to develop global leaders.',
+                    summary: 'One-year fully funded master’s programs in the UK with allowance for travel and living.',
+                    eligible: [
+                        'Bachelor’s degree',
+                        'Leadership experience',
+                        'Return to Algeria after study'
+                    ],
+                    funds: 'Tuition, living allowance, airfare, visa, and other allowances.',
+                    link: 'https://www.chevening.org/'
+                },
+                {
+                    id: 'dz3',
+                    name: 'DAAD Scholarships',
+                    category: 'Master’s & PhD Programs (Germany)',
+                    audience: 'Algerian students seeking postgraduate degrees in Germany.',
+                    reason: 'Supports academic excellence and international cooperation.',
+                    summary: 'Covers tuition, living costs, research grants, and travel support.',
+                    eligible: [
+                        'Bachelor’s or equivalent',
+                        'Academic excellence',
+                        'Language proficiency (English/German)'
+                    ],
+                    funds: 'Monthly stipend, travel, health insurance, research grants.',
+                    link: 'https://www.daad.de/'
+                },
+                {
+                    id: 'dz4',
+                    name: 'Australia Awards Scholarships',
+                    category: 'Postgraduate Programs (Australia)',
+                    audience: 'Algerian students from developing communities seeking higher education in Australia.',
+                    reason: 'Aims to build leadership and human resource capacity.',
+                    summary: 'Covers tuition, travel, living allowance, health insurance, and professional development.',
+                    eligible: [
+                        'Algerian citizenship',
+                        'Bachelor’s degree',
+                        'Return to Algeria after study'
+                    ],
+                    funds: 'Tuition, airfare, living allowance, health insurance.',
+                    link: 'https://www.dfat.gov.au/people-to-people/australia-awards'
+                },
+                {
+                    id: 'dz5',
+                    name: 'Turkiye Scholarships',
+                    category: 'Undergraduate & Postgraduate (Turkey)',
+                    audience: 'Algerian students seeking full-time study in Turkey.',
+                    reason: 'Government-funded scholarships covering tuition, living, and travel expenses.',
+                    summary: 'Offers full tuition, accommodation, stipend, health insurance, and optional Turkish language courses.',
+                    eligible: [
+                        'Academic qualifications',
+                        'Strong academic record',
+                        'Age and language requirements'
+                    ],
+                    funds: 'Full tuition, accommodation, monthly stipend, health insurance.',
+                    link: 'https://www.turkiyeburslari.gov.tr/'
+                }
+            ],
+
+            andorra: [
+                {
+                    id: 'ad1',
+                    name: 'Erasmus+ Program',
+                    category: 'Master’s Programs (Europe)',
+                    audience: 'Andorran students pursuing higher education abroad in Europe.',
+                    reason: 'Promotes mobility and cross-cultural education opportunities.',
+                    summary: 'Financial support for tuition and living expenses for master’s studies in European universities.',
+                    eligible: [
+                        'Citizen of Andorra',
+                        'Bachelor’s degree',
+                        'Admission to European master’s program'
+                    ],
+                    funds: 'Tuition coverage, living costs, partial or full grant.',
+                    link: 'https://erasmus-plus.ec.europa.eu/'
+                }
+            ],
+
+            angola: [
+                {
+                    id: 'ao1',
+                    name: 'Chevening Scholarship',
+                    category: 'Master’s Programs (UK)',
+                    audience: 'Angolan students with leadership potential and strong academic record.',
+                    reason: 'Develop global leaders through one-year fully funded study in the UK.',
+                    summary: 'Full tuition, travel, living allowance and visa costs for master’s program in the UK.',
+                    eligible: [
+                        'Bachelor’s degree',
+                        'Leadership potential',
+                        'Commitment to return to Angola'
+                    ],
+                    funds: 'Tuition, living allowance, travel costs, visa, and other allowances.',
+                    link: 'https://www.chevening.org/'
+                }
+            ],
+
+            "antigua-barbuda": [
+                {
+                    id: 'ag1',
+                    name: 'Caribbean Development Bank Scholarships',
+                    category: 'Undergraduate & Postgraduate (Caribbean)',
+                    audience: 'Students from Antigua and Barbuda pursuing higher education in Caribbean countries.',
+                    reason: 'Supports human capital development in Caribbean nations through scholarships and grants.',
+                    summary: 'Funding for tuition, living allowance and related study costs at participating Caribbean universities.',
+                    eligible: [
+                        'Citizen of Antigua & Barbuda',
+                        'Academic acceptance into a recognized program'
+                    ],
+                    funds: 'Tuition fees, living stipend, travel and other allowances.',
+                    link: 'https://www.caribank.org/scholarships'
+                }
+            ],
+            argentina: [
+                {
+                    id: 'ar1',
+                    name: 'CONICET Doctoral & Postdoctoral Fellowships',
+                    category: 'Doctoral / Postdoctoral Research',
+                    audience: 'International researchers and students pursuing advanced research in Argentina.',
+                    reason: 'Argentina’s leading scientific research body supports high‑impact research across disciplines.',
+                    summary: 'Highly competitive fellowships covering tuition, monthly research stipend, and research costs for PhD or postdoctoral research in Argentina.:contentReference[oaicite:0]{index=0}',
+                    eligible: ['Admission to a PhD or postdoc research program', 'Strong academic/research record'],
+                    funds: 'Monthly stipend, research costs, health insurance, travel allowances.',
+                    link: 'https://bestfullyfundedscholarships.com/25-fully-funded-scholarships-argentina/'
+                },
+                {
+                    id: 'ar2',
+                    name: 'ITBA International Grants',
+                    category: 'Undergraduate & Graduate Study',
+                    audience: 'International students enrolled at Instituto Tecnológico de Buenos Aires.',
+                    reason: 'Merit and need‑based support by one of Argentina’s top private technology universities.',
+                    summary: 'Partial to full tuition coverage for engineering, business, and technology programs.:contentReference[oaicite:1]{index=1}',
+                    eligible: ['Admission to ITBA program', 'High academic performance'],
+                    funds: 'Partial to full tuition scholarship.',
+                    link: 'https://bestfullyfundedscholarships.com/25-fully-funded-scholarships-argentina/'
+                },
+                {
+                    id: 'ar3',
+                    name: 'Dr. Carlos E. Castañeda Memorial Scholarship',
+                    category: 'Undergraduate & Graduate',
+                    audience: 'International students studying in Argentina.',
+                    reason: 'Annual award honoring academic excellence and commitment to study in Argentina.:contentReference[oaicite:2]{index=2}',
+                    summary: 'Provides financial support for semester or full academic year study in Argentina.',
+                    eligible: ['Enrollment at an Argentine institution', 'Strong academic record'],
+                    funds: '$2,000–$2,500 financial award.',
+                    link: 'https://www.edarabia.com/scholarships-argentina-international-students/'
+                },
+                {
+                    id: 'ar4',
+                    name: 'Don Quijote Scholarship',
+                    category: 'Undergraduate & Graduate',
+                    audience: 'International students interested in Argentine studies.',
+                    reason: 'Funded via University of Richmond’s Latin American & Iberian Studies collaboration.:contentReference[oaicite:3]{index=3}',
+                    summary: 'Academic grant supporting study in humanities or social sciences in Argentina.',
+                    eligible: ['High academic profile', 'Spanish proficiency preferred'],
+                    funds: 'Up to $4,700 educational grant.',
+                    link: 'https://www.edarabia.com/scholarships-argentina-international-students/'
+                },
+                {
+                    id: 'ar5',
+                    name: 'Rainforest Alliance Kleinhans Fellowship',
+                    category: 'Environmental Research',
+                    audience: 'Graduate students in environmental science and related fields.',
+                    reason: 'Funding for research in sustainable forestry and ecology in Argentina.:contentReference[oaicite:4]{index=4}',
+                    summary: 'Supports field research with living and research expense funding.',
+                    eligible: ['Graduate degree in relevant field', 'Research plan aligned with objectives'],
+                    funds: 'Up to $16,000 annual grant.',
+                    link: 'https://www.edarabia.com/scholarships-argentina-international-students/'
+                }
+            ],
+
+            armenia: [
+                {
+                    id: 'am1',
+                    name: 'Korean Government Scholarship Program (KGSP)',
+                    category: 'Undergraduate / Graduate / PhD',
+                    audience: 'Armenian students aiming to study in South Korea.',
+                    reason: 'Government‑backed scholarship open to citizens of 157+ countries including Armenia.:contentReference[oaicite:5]{index=5}',
+                    summary: 'Fully funded Korean government scholarship covering tuition, living costs, airfare, etc.',
+                    eligible: ['Citizenship of Armenia', 'Academic qualifications per program'],
+                    funds: 'Tuition, living stipend, health insurance, airfare.',
+                    link: 'https://www.studyinkorea.go.kr/'
+                },
+                {
+                    id: 'am2',
+                    name: 'Erasmus+ Joint Master Degrees',
+                    category: 'Master’s Degrees (Europe)',
+                    audience: 'Armenian students seeking funded joint master’s study across European universities.',
+                    reason: 'EU‑funded program supporting study in multiple institutions in Europe.',
+                    summary: 'Full tuition coverage and living allowance for selected Erasmus Mundus joint master’s programs.',
+                    eligible: ['Bachelor’s degree', 'Program‑specific requirements'],
+                    funds: 'Tuition, living allowance, travel support.',
+                    link: 'https://erasmus-plus.ec.europa.eu/'
+                },
+                {
+                    id: 'am3',
+                    name: 'Fulbright Foreign Student Program',
+                    category: 'Graduate Level Study Abroad',
+                    audience: 'Armenian students pursuing masters or PhD abroad.',
+                    reason: 'Highly regarded U.S. scholarship promoting academic exchange and leadership.',
+                    summary: 'Funding for graduate study and research in the United States.',
+                    eligible: ['Bachelor’s degree', 'Strong academics and proposal'],
+                    funds: 'Tuition, living allowance, travel, insurance.',
+                    link: 'https://foreign.fulbrightonline.org/'
+                },
+                {
+                    id: 'am4',
+                    name: 'Chevening Scholarships',
+                    category: 'One‑Year Master’s (UK)',
+                    audience: 'Armenian graduates with leadership potential.',
+                    reason: 'UK government flagship scholarship for future leaders.',
+                    summary: 'Fully funded master’s with leadership and professional opportunities. (Common option for developing country students)',
+                    eligible: ['Bachelor’s degree', 'Leadership potential'],
+                    funds: 'Tuition, living costs, airfare, visa allowances.',
+                    link: 'https://www.chevening.org/'
+                },
+                {
+                    id: 'am5',
+                    name: 'Commonwealth Shared Scholarships',
+                    category: 'Masters & PhD (UK)',
+                    audience: 'Talented students from eligible nations seeking UK study.',
+                    reason: 'FCDO‑funded awards focusing on sustainable development and access. (Open to some non‑Commonwealth cases if eligible)',
+                    summary: 'Supports full tuition, living and travel for select eligible programs.',
+                    eligible: ['Relevant degree', 'Development commitment'],
+                    funds: 'Tuition, stipend, travel.',
+                    link: 'https://cscuk.fcdo.gov.uk/scholarships/'
+                }
+            ],
+
+            australia: [
+                {
+                    id: 'au1',
+                    name: 'Australia Awards Scholarships',
+                    category: 'Undergraduate & Postgraduate Programs',
+                    audience: 'International students from developing and partner countries.',
+                    reason: 'Australian Government long‑term awards fostering development and leadership.:contentReference[oaicite:6]{index=6}',
+                    summary: 'Full‑tuition scholarships with living allowance, airfare, health insurance, and preparatory courses.',
+                    eligible: ['Citizenship of eligible countries', 'Academic entry requirements'],
+                    funds: 'Tuition, travel, living allowance, health insurance.',
+                    link: 'https://www.dfat.gov.au/people-to-people/australia-awards-scholarships'
+                },
+                {
+                    id: 'au2',
+                    name: 'Endeavour Postgraduate Scholarship',
+                    category: 'Postgraduate (Masters / PhD)',
+                    audience: 'International applicants seeking study and research in Australia.',
+                    reason: 'Merit‑based Australian Government scholarship (competitive global program).:contentReference[oaicite:7]{index=7}',
+                    summary: 'Covers tuition, living allowance, travel cost, and health insurance for postgraduate study.',
+                    eligible: ['Entry to Masters or PhD program', 'Strong academic merit'],
+                    funds: 'Tuition, stipend, travel allowance, insurance.',
+                    link: 'https://internationaleducation.gov.au/scholarships/Pages/Endeavour-Leadership-Program.aspx'
+                },
+                {
+                    id: 'au3',
+                    name: 'Destination Australia Scholarships',
+                    category: 'Undergraduate & Postgraduate',
+                    audience: 'International students studying at regional Australian campuses.',
+                    reason: 'Australian Government initiative to encourage study in regional areas.',
+                    summary: 'Supports international students with living cost stipends at participating regional universities.',
+                    eligible: ['Study offer at regional institution', 'Academic merit'],
+                    funds: 'Living stipends plus tuition support (varies).',
+                    link: 'https://www,destinationaustralia.gov.au/'
+                },
+                {
+                    id: 'au4',
+                    name: 'Research Training Program (RTP)',
+                    category: 'Postgraduate Research',
+                    audience: 'International research students in Australian universities.',
+                    reason: 'Government‑funded research scholarships under the Department of Education.',
+                    summary: 'Scholarship covering tuition and living costs for PhD or research Masters.:contentReference[oaicite:8]{index=8}',
+                    eligible: ['Research degree acceptance', 'Competitive academic record'],
+                    funds: 'Tuition fees and stipend.',
+                    link: 'https://www.education.gov.au/'
+                },
+                { id: 'au5', name: 'University of Sydney International Scholarship', category: 'Undergraduate & Postgraduate', audience: 'International students at University of Sydney.', reason: 'Merit‑based funding by a top Australian university.', summary: 'Tuition fee support and living allowances for high‑achieving students.', eligible: ['Admission to University of Sydney', 'Academic excellence'], funds: 'Partial to full tuition support.', link: 'https://www.sydney.edu.au/scholarships' },
+                { id: 'au6', name: 'Melbourne International Research Scholarships', category: 'Research (Masters/PhD)', audience: 'Research candidates at University of Melbourne.', reason: 'Encourages global research talent at Australia’s leading university.', summary: 'Supports research fees and stipend for graduate research programs.', eligible: ['Acceptance into research program'], funds: 'Tuition and living stipend.', link: 'https://scholarships.unimelb.edu.au' },
+                { id: 'au7', name: 'ANU Global Diversity Scholarship', category: 'Undergraduate & Postgraduate', audience: 'International students at Australian National University.', reason: 'Rewarding high achievement and diversity in global applicants.', summary: 'Tuition fee reduction for global student community.', eligible: ['Admission to ANU', 'Academic merit'], funds: 'Tuition fees waiver.', link: 'https://www.anu.edu.au/study/scholarships' },
+                { id: 'au8', name: 'University of Queensland Excellence Scholarship', category: 'Undergraduate & Postgraduate', audience: 'International students at UQ.', reason: 'Recognition of outstanding academic achievement.', summary: 'Full or partial tuition coverage for high performers.', eligible: ['Strong academic record'], funds: 'Tuition fee coverage.', link: 'https://scholarships.uq.edu.au' },
+                { id: 'au9', name: 'Monash University International Scholarship', category: 'Undergraduate & Postgraduate', audience: 'International students at Monash University.', reason: 'Merit‑based tuition support for top applicants.', summary: 'Financial aid covering tuition costs for study at Monash.', eligible: ['Academic excellence'], funds: 'Partial to full tuition coverage.', link: 'https://www.monash.edu/study/scholarships' },
+                { id: 'au10', name: 'Curtin International Scholarship', category: 'Undergraduate & Postgraduate', audience: 'International applicants at Curtin University.', reason: 'University‑funded tuition scholarship.', summary: 'Support for tuition and fees up to full coverage.', eligible: ['Admission and merit'], funds: 'Tuition fees.', link: 'https://scholarships.curtin.edu.au' },
+                { id: 'au11', name: 'Macquarie University International Scholarship', category: 'Undergraduate & Postgraduate', audience: 'Global students at Macquarie.', reason: 'Provides financial support for international tuition.', summary: 'Partial to full fee support depending on academic record.', eligible: ['Admission and merit'], funds: 'Tuition support.', link: 'https://www.mq.edu.au/study/scholarships' },
+                { id: 'au12', name: 'University of Adelaide Global Citizens Scholarship', category: 'Undergraduate & Postgraduate', audience: 'International students at University of Adelaide.', reason: 'Encourages global academic excellence.', summary: 'Tuition fee support for admittees with strong results.', eligible: ['Admission and merit'], funds: 'Tuition reduction.', link: 'https://www.adelaide.edu.au' },
+                { id: 'au13', name: 'University of Western Australia International Scholarship', category: 'Undergraduate & Postgraduate', audience: 'International students at UWA.', reason: 'Merit funding for global applicants.', summary: 'Partial to full tuition coverage.', eligible: ['Admission and merit'], funds: 'Tuition support.', link: 'https://www.uwa.edu.au' },
+                { id: 'au14', name: 'Queensland University of Technology (QUT) International Scholarships', category: 'Undergraduate/Postgraduate', audience: 'International students at QUT.', reason: 'Merit/need‑based tuition support.', summary: 'Tuition fee coverage depending on criteria.', eligible: ['Admission', 'Academic merit'], funds: 'Tuition support.', link: 'https://www.qut.edu.au' },
+                { id: 'au15', name: 'Australian National University Research School Scholarships', category: 'Research Postgraduate', audience: 'Research Masters/PhD candidates at ANU.', reason: 'Support for high‑impact research projects in science and humanities.', summary: 'Tuition and stipend support for graduate research.', eligible: ['Research acceptance', 'Academic excellence'], funds: 'Tuition and living support.', link: 'https://www.anu.edu.au' }
+            ],
+
+            austria: [
+                {
+                    id: 'at1',
+                    name: 'Austrian Development Scholarships',
+                    category: 'Undergraduate & Graduate Programs',
+                    audience: 'International students from all countries.',
+                    reason: 'Government‑funded fully or partially funded scholarship programmes for study in Austria.:contentReference[oaicite:9]{index=9}',
+                    summary: 'Supports students with tuition, monthly stipend, health insurance, and partial travel assistance.',
+                    eligible: ['Strong academic record', 'Admission to Austrian university'],
+                    funds: 'Tuition, stipend, insurance, partial travel costs.',
+                    link: 'https://brightscholarship.com/austria-government-scholarships-2026/'
+                },
+                {
+                    id: 'at2',
+                    name: 'Erhard Busek Grant',
+                    category: 'Masters Programs',
+                    audience: 'Highly qualified international applicants.',
+                    reason: 'Austrian government grant to enable a full Master’s at Austrian institutions.:contentReference[oaicite:10]{index=10}',
+                    summary: 'Covers tuition, partial stipend, and supports research and study costs.',
+                    eligible: ['Bachelor’s degree', 'Admission offer from Austrian university'],
+                    funds: 'Tuition and research/study support.',
+                    link: 'https://oead.at/en/the-oead/our-programmes-from-a-to-z'
+                },
+                {
+                    id: 'at3',
+                    name: 'Erasmus+ Joint Master Degrees',
+                    category: 'Joint Master’s Programs (Europe)',
+                    audience: 'Students from all countries studying in European consortium programs.',
+                    reason: 'EU‑funded master’s with study across institutions including Austria.:contentReference[oaicite:11]{index=11}',
+                    summary: 'Tuition coverage and living allowance for Erasmus Mundus joint master’s degrees.',
+                    eligible: ['Bachelor’s degree', 'Admission to EMJMD'],
+                    funds: 'Tuition, monthly allowance, travel support.',
+                    link: 'https://erasmus-plus.ec.europa.eu/'
+                },
+                {
+                    id: 'at4',
+                    name: 'OeAD Scholarships & Grants',
+                    category: 'Undergraduate / Masters / Research',
+                    audience: 'International students and researchers.',
+                    reason: 'Scholarship programmes supported by Austria’s OeAD for study and research.:contentReference[oaicite:12]{index=12}',
+                    summary: 'Scholarships and grants listed on Austria’s official grants database.',
+                    eligible: ['Admission to Austrian institution or research project'],
+                    funds: 'Monthly grants and study support (varies).',
+                    link: 'https://www.grants.at'
+                },
+                {
+                    id: 'at5',
+                    name: 'Erasmus+ Short Term Mobility Grants',
+                    category: 'Short Exchange / Study Abroad',
+                    audience: 'International students undertaking short-term studies.',
+                    reason: 'EU mobility grants for short academic stays in Austria.',
+                    summary: 'Provides travel support and daily allowances for short study periods.',
+                    eligible: ['Enrollment in home university and partner program'],
+                    funds: 'Travel support and daily stipends.',
+                    link: 'https://erasmus-plus.ec.europa.eu/'
+                }
+            ],
+
+
+            uk: [{
+                id: 'uk1',
+                name: 'Chevening Scholarship',
+                category: 'One-Year Master’s Degree Programs',
+                audience: 'International students with strong academic backgrounds and leadership potential who aim to contribute to policy, education, governance, or development in their home countries.',
+                reason: 'Chevening is a flagship UK government scholarship funded by the Foreign, Commonwealth & Development Office. It is valued not only for its full financial support but also for its strong focus on leadership development, professional networking, and long-term global engagement.',
+                summary: 'The scholarship enables recipients to pursue a full-time Master’s degree at any recognized UK university. Scholars participate in academic study, leadership events, and professional networking throughout the year.',
+                eligible: [
+                    'Recognized undergraduate degree',
+                    'Minimum two years of work experience',
+                    'Leadership potential and career clarity',
+                    'Commitment to return home after study'
+                ],
+                funds: 'Full tuition fees, monthly living allowance, airfare, visa fees, and additional allowances.',
+                link: 'https://www.chevening.org/'
+            },
+
+            {
+                id: 'uk2',
+                name: 'Chevening Scholarship',
+                category: 'One-Year Master’s Degree Programs',
+                audience: 'Future leaders from 160+ countries with 2+ years of work experience.',
+                reason: 'Flagship UK government award. Highly prestigious for networking and high-level career growth.',
+                summary: 'Fully funded master’s degree at any UK university with a focus on leadership.',
+                eligible: ['Undergraduate degree', '2,800 hours work experience', 'Leadership potential', 'Return home for 2 years'],
+                funds: 'Full tuition, monthly stipend (~£1,300-£1,500), flights, and visa.',
+                link: 'https://www.chevening.org/scholarship/bangladesh/' // Targeted link example
+            },
+            {
+                id: 'uk3',
+                name: 'Commonwealth Master’s Scholarships',
+                category: 'Development-Focused Masters',
+                audience: 'Talented individuals from eligible Commonwealth countries.',
+                reason: 'Funded by the FCDO to support sustainable development in the Commonwealth.',
+                summary: 'Designed for students who cannot afford UK study and want to impact their home country.',
+                eligible: ['Commonwealth citizen', '2:1 Honours degree', 'Cannot afford study without award'],
+                funds: 'Full tuition, airfare, maintenance stipend (~£1,347), and allowances.',
+                link: 'https://cscuk.fcdo.gov.uk/scholarships/commonwealth-masters-scholarships/'
+            },
+            {
+                id: 'uk4',
+                name: 'Rhodes Scholarship',
+                category: 'Oxford University Postgraduate',
+                audience: 'Young leaders with exceptional intellect and character.',
+                reason: 'The "world’s most prestigious" scholarship. Joins a lifelong global fellowship.',
+                summary: 'Fully funded postgraduate study at the University of Oxford.',
+                eligible: ['Age 18-24 (usually)', 'Outstanding GPA', 'Leadership and moral force of character'],
+                funds: 'All university fees, personal stipend (£19,000+ per year), and health insurance.',
+                link: 'https://www.rhodeshouse.ox.ac.uk/scholarships/the-rhodes-scholarship/'
+            },
+            {
+                id: 'uk5',
+                name: 'Gates Cambridge Scholarship',
+                category: 'Cambridge University Postgraduate',
+                audience: 'Brilliant students outside the UK with a commitment to public service.',
+                reason: 'One of the most generous scholarships in the world, funded by the Bill & Melinda Gates Foundation.',
+                summary: 'Covers any subject available at the University of Cambridge.',
+                eligible: ['Non-UK citizen', 'Intellectual excellence', 'Commitment to improving the lives of others'],
+                funds: 'Full cost of Cambridge (tuition, maintenance, travel, and family allowance).',
+                link: 'https://www.gatescambridge.org/'
+            },
+            {
+                id: 'uk6',
+                name: 'GREAT Scholarships',
+                category: 'Postgraduate Taught Programs',
+                audience: 'Students from 15 specific countries (e.g. Bangladesh, China, India, Pakistan).',
+                reason: 'Joint initiative by the British Council and the UK government for specific international markets.',
+                summary: 'Minimum of £10,000 towards tuition for a one-year Master\'s course.',
+                eligible: ['Passport holder of eligible country', 'Motivated to be a UK ambassador'],
+                funds: '£10,000 tuition fee waiver.',
+                link: 'https://study-uk.britishcouncil.org/scholarships-funding/great-scholarships'
+            },
+            {
+                id: 'uk7',
+                name: 'Clarendon Fund Scholarships',
+                category: 'Oxford Graduate Study',
+                audience: 'The highest-performing graduate students worldwide.',
+                reason: 'Awarded solely on academic merit. Automatic consideration when you apply to Oxford.',
+                summary: 'Covers over 150 students annually across all graduate-level disciplines.',
+                eligible: ['Apply to Oxford by Jan deadline', 'Exceptional academic record'],
+                funds: 'Full tuition and college fees, plus a generous living grant.',
+                link: 'https://www.ox.ac.uk/clarendon'
+            },
+            {
+                id: 'uk8',
+                name: 'Marshall Scholarship',
+                category: 'Graduate Study for US Citizens',
+                audience: 'High-achieving Americans who will be future leaders in US-UK relations.',
+                reason: 'Strengthens ties between the US and UK. Very high prestige in the United States.',
+                summary: 'Supports study at any UK institution for up to two years.',
+                eligible: ['US citizen', 'Undergraduate GPA 3.7+', 'Completed degree in the US'],
+                funds: 'University fees, living allowance, travel, and book grants.',
+                link: 'https://www.marshallscholarship.org/'
+            },
+            {
+                id: 'uk9',
+                name: 'British Council Women in STEM',
+                category: 'STEM Masters & Fellowships',
+                audience: 'Women with a background in STEM from select regions.',
+                reason: 'Targets the gender gap in science, technology, engineering, and math fields.',
+                summary: 'Fully funded Master’s or Fellowship at participating UK universities.',
+                eligible: ['Female-identifying', 'STEM background', 'Passport of eligible country'],
+                funds: 'Tuition, stipend, travel costs, and visa fees.',
+                link: 'https://www.britishcouncil.org/study-work-abroad/in-uk/scholarship-women-stem'
+            },
+            {
+                id: 'uk10',
+                name: 'University of Bristol - Think Big',
+                category: 'Undergraduate & Postgraduate',
+                audience: 'International students applying to the University of Bristol.',
+                reason: 'Bristol’s own flagship international funding scheme to attract global talent.',
+                summary: 'Broad range of scholarships for all subjects except Medicine/Dentistry.',
+                eligible: ['International fee status student', 'Applied to Bristol'],
+                funds: 'Ranges from £6,500 to £26,000 per year towards tuition.',
+                link: 'https://www.bristol.ac.uk/international/fees-finance/scholarships/apply/'
+            },
+            {
+                id: 'uk11',
+                name: 'Saltire Scholars Programme',
+                category: 'Internship & Leadership (Undergrad/Postgrad)',
+                audience: 'Students enrolled at Scottish Universities looking for global impact.',
+                reason: 'Focuses on building leadership for Scotland through global work placements.',
+                summary: 'Provides fully-funded internships and leadership training for students in Scotland.',
+                eligible: ['Enrolled at a Scottish University', 'Leadership potential', 'Priority sectors (Science, Tech, etc.)'],
+                funds: 'Internship stipend, travel, and professional development support.',
+                link: 'https://www.entrepreneurialscotland.com/programmes/saltire-scholar-programme/'
+            }
+            ],
+            italy: [{
+                id: 'it1',
+                name: 'Invest Your Talent in Italy',
+                category: 'Master’s Degree Programs',
+                audience: 'International graduates seeking advanced education in Italy with academic and professional integration.',
+                reason: 'This program is supported by the Italian Ministry of Foreign Affairs and leading universities, combining academic study with industry internships to enhance employability.',
+                summary: 'Students enroll in Italian universities and participate in internships with Italian companies, gaining both academic knowledge and professional experience.',
+                eligible: [
+                    'Relevant Bachelor’s degree',
+                    'Strong academic background',
+                    'Citizenship of eligible countries',
+                    'English proficiency'
+                ],
+                funds: 'Monthly allowance and partial or full tuition coverage.',
+                link: 'https://studyintuscany.italia.it/'
+            }]
+        };
+
+        const countries = [
+            { id: 'afghanistan', name: 'Afghanistan', icon: 'fa-mountain' },
+            { id: 'albania', name: 'Albania', icon: 'fa-eagle' },
+            { id: 'algeria', name: 'Algeria', icon: 'fa-mosque' },
+            { id: 'andorra', name: 'Andorra', icon: 'fa-place-of-worship' },
+            { id: 'angola', name: 'Angola', icon: 'fa-cog' },
+            { id: 'antigua-barbuda', name: 'Antigua and Barbuda', icon: 'fa-umbrella-beach' },
+            { id: 'argentina', name: 'Argentina', icon: 'fa-sun' },
+            { id: 'armenia', name: 'Armenia', icon: 'fa-landmark' },
+            { id: 'australia', name: 'Australia', icon: 'fa-kangaroo' },
+            { id: 'austria', name: 'Austria', icon: 'fa-music' },
+            { id: 'azerbaijan', name: 'Azerbaijan', icon: 'fa-fire' },
+            { id: 'bahamas', name: 'Bahamas', icon: 'fa-fish' },
+            { id: 'bahrain', name: 'Bahrain', icon: 'fa-building' },
+            { id: 'bangladesh', name: 'Bangladesh', icon: 'fa-leaf' },
+            { id: 'barbados', name: 'Barbados', icon: 'fa-ship' },
+            { id: 'belarus', name: 'Belarus', icon: 'fa-tree' },
+            { id: 'belgium', name: 'Belgium', icon: 'fa-cheese' },
+            { id: 'belize', name: 'Belize', icon: 'fa-water' },
+            { id: 'benin', name: 'Benin', icon: 'fa-mask' },
+            { id: 'bhutan', name: 'Bhutan', icon: 'fa-dragon' },
+            { id: 'bolivia', name: 'Bolivia', icon: 'fa-mountain-sun' },
+            { id: 'bosnia-herzegovina', name: 'Bosnia and Herzegovina', icon: 'fa-archway' },
+            { id: 'botswana', name: 'Botswana', icon: 'fa-hippo' },
+            { id: 'brazil', name: 'Brazil', icon: 'fa-football' },
+            { id: 'brunei', name: 'Brunei', icon: 'fa-kaaba' },
+            { id: 'bulgaria', name: 'Bulgaria', icon: 'fa-chess-rook' },
+            { id: 'burkina-faso', name: 'Burkina Faso', icon: 'fa-sun' },
+            { id: 'burundi', name: 'Burundi', icon: 'fa-drum' },
+            { id: 'cambodia', name: 'Cambodia', icon: 'fa-temple' },
+            { id: 'cameroon', name: 'Cameroon', icon: 'fa-star' },
+            { id: 'canada', name: 'Canada', icon: 'fa-leaf' },
+            { id: 'cape-verde', name: 'Cape Verde', icon: 'fa-island-tropical' },
+            { id: 'central-african-republic', name: 'Central African Republic', icon: 'fa-map' },
+            { id: 'chad', name: 'Chad', icon: 'fa-water' },
+            { id: 'chile', name: 'Chile', icon: 'fa-mountain-range' },
+            { id: 'china', name: 'China', icon: 'fa-dragon' },
+            { id: 'colombia', name: 'Colombia', icon: 'fa-coffee' },
+            { id: 'comoros', name: 'Comoros', icon: 'fa-moon' },
+            { id: 'congo', name: 'Congo', icon: 'fa-tree' },
+            { id: 'costa-rica', name: 'Costa Rica', icon: 'fa-frog' },
+            { id: 'croatia', name: 'Croatia', icon: 'fa-shield-halved' },
+            { id: 'cuba', name: 'Cuba', icon: 'fa-car' },
+            { id: 'cyprus', name: 'Cyprus', icon: 'fa-landmark' },
+            { id: 'czech-republic', name: 'Czech Republic', icon: 'fa-castle' },
+            { id: 'denmark', name: 'Denmark', icon: 'fa-viking' },
+            { id: 'djibouti', name: 'Djibouti', icon: 'fa-anchor' },
+            { id: 'dominica', name: 'Dominica', icon: 'fa-bird' },
+            { id: 'dominican-republic', name: 'Dominican Republic', icon: 'fa-baseball-bat-ball' },
+            { id: 'ecuador', name: 'Ecuador', icon: 'fa-earth-americas' },
+            { id: 'egypt', name: 'Egypt', icon: 'fa-monument' },
+            { id: 'el-salvador', name: 'El Salvador', icon: 'fa-volcano' },
+            { id: 'equatorial-guinea', name: 'Equatorial Guinea', icon: 'fa-oil-well' },
+            { id: 'eritrea', name: 'Eritrea', icon: 'fa-wheat-awn' },
+            { id: 'estonia', name: 'Estonia', icon: 'fa-microchip' },
+            { id: 'eswatini', name: 'Eswatini', icon: 'fa-shield' },
+            { id: 'ethiopia', name: 'Ethiopia', icon: 'fa-mug-hot' },
+            { id: 'fiji', name: 'Fiji', icon: 'fa-palmtree' },
+            { id: 'finland', name: 'Finland', icon: 'fa-snowflake' },
+            { id: 'france', name: 'France', icon: 'fa-tower-eiffel' },
+            { id: 'gabon', name: 'Gabon', icon: 'fa-tree' },
+            { id: 'gambia', name: 'Gambia', icon: 'fa-water' },
+            { id: 'georgia', name: 'Georgia', icon: 'fa-wine-glass' },
+            { id: 'germany', name: 'Germany', icon: 'fa-beer-mug-empty' },
+            { id: 'ghana', name: 'Ghana', icon: 'fa-cocoa' },
+            { id: 'greece', name: 'Greece', icon: 'fa-columns' },
+            { id: 'grenada', name: 'Grenada', icon: 'fa-seedling' },
+            { id: 'guatemala', name: 'Guatemala', icon: 'fa-temple' },
+            { id: 'guinea', name: 'Guinea', icon: 'fa-diamond' },
+            { id: 'guyana', name: 'Guyana', icon: 'fa-water' },
+            { id: 'haiti', name: 'Haiti', icon: 'fa-drum' },
+            { id: 'honduras', name: 'Honduras', icon: 'fa-monument' },
+            { id: 'hungary', name: 'Hungary', icon: 'fa-water' },
+            { id: 'iceland', name: 'Iceland', icon: 'fa-icicles' },
+            { id: 'india', name: 'India', icon: 'fa-om' },
+            { id: 'indonesia', name: 'Indonesia', icon: 'fa-volcano' },
+            { id: 'iran', name: 'Iran', icon: 'fa-landmark' },
+            { id: 'iraq', name: 'Iraq', icon: 'fa-mosque' },
+            { id: 'ireland', name: 'Ireland', icon: 'fa-clover' },
+            { id: 'israel', name: 'Israel', icon: 'fa-star-of-david' },
+            { id: 'italy', name: 'Italy', icon: 'fa-pizza-slice' },
+            { id: 'jamaica', name: 'Jamaica', icon: 'fa-record-vinyl' },
+            { id: 'japan', name: 'Japan', icon: 'fa-torii-gate' },
+            { id: 'jordan', name: 'Jordan', icon: 'fa-archway' },
+            { id: 'kazakhstan', name: 'Kazakhstan', icon: 'fa-horse' },
+            { id: 'kenya', name: 'Kenya', icon: 'fa-safari' },
+            { id: 'kuwait', name: 'Kuwait', icon: 'fa-tower-observation' },
+            { id: 'kyrgyzstan', name: 'Kyrgyzstan', icon: 'fa-mountain' },
+            { id: 'laos', name: 'Laos', icon: 'fa-vihara' },
+            { id: 'latvia', name: 'Latvia', icon: 'fa-tree' },
+            { id: 'lebanon', name: 'Lebanon', icon: 'fa-tree' },
+            { id: 'lesotho', name: 'Lesotho', icon: 'fa-hat-wizard' },
+            { id: 'liberia', name: 'Liberia', icon: 'fa-ship' },
+            { id: 'libya', name: 'Libya', icon: 'fa-oil-well' },
+            { id: 'liechtenstein', name: 'Liechtenstein', icon: 'fa-castle' },
+            { id: 'lithuania', name: 'Lithuania', icon: 'fa-basketball' },
+            { id: 'luxembourg', name: 'Luxembourg', icon: 'fa-gem' },
+            { id: 'madagascar', name: 'Madagascar', icon: 'fa-baobab' },
+            { id: 'malawi', name: 'Malawi', icon: 'fa-fish' },
+            { id: 'malaysia', name: 'Malaysia', icon: 'fa-building' },
+            { id: 'maldives', name: 'Maldives', icon: 'fa-umbrella-beach' },
+            { id: 'mali', name: 'Mali', icon: 'fa-mosque' },
+            { id: 'malta', name: 'Malta', icon: 'fa-cross' },
+            { id: 'mexico', name: 'Mexico', icon: 'fa-pepper-hot' },
+            { id: 'moldova', name: 'Moldova', icon: 'fa-wine-bottle' },
+            { id: 'monaco', name: 'Monaco', icon: 'fa-car-side' },
+            { id: 'mongolia', name: 'Mongolia', icon: 'fa-tent' },
+            { id: 'montenegro', name: 'Montenegro', icon: 'fa-mountain' },
+            { id: 'morocco', name: 'Morocco', icon: 'fa-kaaba' },
+            { id: 'mozambique', name: 'Mozambique', icon: 'fa-star' },
+            { id: 'myanmar', name: 'Myanmar', icon: 'fa-gopuram' },
+            { id: 'namibia', name: 'Namibia', icon: 'fa-desert' },
+            { id: 'nepal', name: 'Nepal', icon: 'fa-mountain' },
+            { id: 'netherlands', name: 'Netherlands', icon: 'fa-windmills' },
+            { id: 'new-zealand', name: 'New Zealand', icon: 'fa-kiwi-bird' },
+            { id: 'nicaragua', name: 'Nicaragua', icon: 'fa-volcano' },
+            { id: 'niger', name: 'Niger', icon: 'fa-sun' },
+            { id: 'nigeria', name: 'Nigeria', icon: 'fa-mask' },
+            { id: 'north-korea', name: 'North Korea', icon: 'fa-person-military-pointing' },
+            { id: 'norway', name: 'Norway', icon: 'fa-ship' },
+            { id: 'oman', name: 'Oman', icon: 'fa-archway' },
+            { id: 'pakistan', name: 'Pakistan', icon: 'fa-moon' },
+            { id: 'palestine', name: 'Palestine', icon: 'fa-olive-branch' },
+            { id: 'panama', name: 'Panama', icon: 'fa-ship' },
+            { id: 'papua-new-guinea', name: 'Papua New Guinea', icon: 'fa-bird' },
+            { id: 'paraguay', name: 'Paraguay', icon: 'fa-shield' },
+            { id: 'peru', name: 'Peru', icon: 'fa-mountain-city' },
+            { id: 'philippines', name: 'Philippines', icon: 'fa-sun' },
+            { id: 'poland', name: 'Poland', icon: 'fa-building-columns' },
+            { id: 'portugal', name: 'Portugal', icon: 'fa-compass' },
+            { id: 'qatar', name: 'Qatar', icon: 'fa-building' },
+            { id: 'romania', name: 'Romania', icon: 'fa-castle' },
+            { id: 'russia', name: 'Russia', icon: 'fa-fort-awesome' },
+            { id: 'rwanda', name: 'Rwanda', icon: 'fa-mountain' },
+            { id: 'saudi-arabia', name: 'Saudi Arabia', icon: 'fa-kaaba' },
+            { id: 'senegal', name: 'Senegal', icon: 'fa-baobab' },
+            { id: 'serbia', name: 'Serbia', icon: 'fa-shield-halved' },
+            { id: 'singapore', name: 'Singapore', icon: 'fa-lion' },
+            { id: 'slovakia', name: 'Slovakia', icon: 'fa-mountain' },
+            { id: 'slovenia', name: 'Slovenia', icon: 'fa-mountain' },
+            { id: 'south-africa', name: 'South Africa', icon: 'fa-diamond' },
+            { id: 'south-korea', name: 'South Korea', icon: 'fa-yin-yang' },
+            { id: 'spain', name: 'Spain', icon: 'fa-bullseye' },
+            { id: 'sri-lanka', name: 'Sri Lanka', icon: 'fa-elephant' },
+            { id: 'sudan', name: 'Sudan', icon: 'fa-pyramids' },
+            { id: 'sweden', name: 'Sweden', icon: 'fa-viking' },
+            { id: 'switzerland', name: 'Switzerland', icon: 'fa-mountain' },
+            { id: 'syria', name: 'Syria', icon: 'fa-landmark' },
+            { id: 'taiwan', name: 'Taiwan', icon: 'fa-building' },
+            { id: 'tanzania', name: 'Tanzania', icon: 'fa-safari' },
+            { id: 'thailand', name: 'Thailand', icon: 'fa-elephant' },
+            { id: 'tunisia', name: 'Tunisia', icon: 'fa-mosque' },
+            { id: 'turkey', name: 'Turkey', icon: 'fa-mosque' },
+            { id: 'uganda', name: 'Uganda', icon: 'fa-bird' },
+            { id: 'ukraine', name: 'Ukraine', icon: 'fa-wheat-awn' },
+            { id: 'uae', name: 'United Arab Emirates', icon: 'fa-building' },
+            { id: 'uk', name: 'United Kingdom', icon: 'fa-university' },
+            { id: 'usa', name: 'United States', icon: 'fa-flag-usa' },
+            { id: 'uruguay', name: 'Uruguay', icon: 'fa-sun' },
+            { id: 'uzbekistan', name: 'Uzbekistan', icon: 'fa-mosque' },
+            { id: 'vietnam', name: 'Vietnam', icon: 'fa-dragon' },
+            { id: 'yemen', name: 'Yemen', icon: 'fa-archway' },
+            { id: 'zambia', name: 'Zambia', icon: 'fa-water' },
+            { id: 'zimbabwe', name: 'Zimbabwe', icon: 'fa-elephant' }
+        ];
+
+        let current = null;
+
+        function renderHub(filter = '') {
+            document.getElementById('backBtn').style.display = 'none';
+            const c = document.getElementById('content');
+            c.className = 'hub-grid';
+
+            // Filter countries by search query
+            const filteredCountries = countries.filter(x =>
+                x.name.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            c.innerHTML = filteredCountries.map(x => `
+<div class="hub-card" onclick="renderList('${x.id}')">
+<i class="fas ${x.icon}"></i>
+<h3>${x.name}</h3>
+</div>`).join('');
+        }
+
+        function renderList(id) {
+            current = id;
+            const searchBar = document.getElementById('countrySearch');
+
+            // Hide the search bar
+            searchBar.style.display = 'none';
+
+            document.getElementById('backBtn').style.display = 'block';
+            const c = document.getElementById('content');
+            c.className = 'scholar-list';
+
+            currentList = db[id] || [];
+
+            if (currentList.length === 0) {
+                c.innerHTML = `<p style="color:var(--text-dim);">No scholarships available for this country.</p>`;
+            } else {
+                c.innerHTML = currentList.map(s => `
+            <div class="scholar-item" onclick="openScholar('${id}','${s.id}')">
+                <h3>${s.name}</h3>
+                <i class="fas fa-chevron-right"></i>
+            </div>
+        `).join('');
+            }
+        }
+
+
+
+        function openScholar(cid, sid) {
+            const s = db[cid].find(x => x.id === sid);
+            d('d-name', s.name);
+            d('d-category', s.category);
+            d('d-audience', s.audience);
+            d('d-reason', s.reason);
+            d('d-summary', s.summary);
+            d('d-funds', s.funds);
+            d('d-eligible', s.eligible.map(e => '• ' + e).join('<br>'));
+            document.getElementById('d-link').href = s.link;
+            document.getElementById('overlay').style.display = 'block';
+        }
+        function closeOverlay() { document.getElementById('overlay').style.display = 'none' }
+        function d(id, val) { document.getElementById(id).innerHTML = val }
+        let currentSection = 'dashboard';
+
+        function switchSection(section) {
+            currentSection = section;
+
+            // Update active link
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            if (section === 'dashboard') document.getElementById('dashboardBtn').classList.add('active');
+            if (section === 'university') document.getElementById('universityBtn').classList.add('active');
+            if (section === 'sop') document.getElementById('sopBtn').classList.add('active');
+            if (section === 'scholarship') document.getElementById('scholarBtn').classList.add('active');
+
+            // Show content based on section
+            const content = document.getElementById('content');
+            document.getElementById('backBtn').style.display = 'none';
+            content.innerHTML = ''; // clear content by default
+
+            if (section === 'dashboard') {
+                content.innerHTML = `<h2 style="color:var(--accent)">Welcome to the Dashboard</h2>
+                         <p>Here you can see quick links, stats, and insights.</p>`;
+            } else if (section === 'university') {
+                content.innerHTML = `<h2 style="color:var(--accent)">Universities</h2>
+                         <p>Search, filter, and explore global universities.</p>`;
+            } else if (section === 'sop') {
+                content.innerHTML = `<h2 style="color:var(--accent)">SOP Builder</h2>
+                         <p>Draft your Statement of Purpose using our guided tool.</p>`;
+            } else if (section === 'scholarship') {
+                renderHub(); // Show scholarship hub grid
+            }
+        }
+
+        // Initial load
+        switchSection('dashboard');
+
+        renderHub();
+        document.getElementById('countrySearch').addEventListener('input', (e) => {
+            renderHub(e.target.value);
+        });
+        document.getElementById('backBtn').onclick = function () {
+            renderHub();
+            document.getElementById('countrySearch').style.display = 'block'; // show search bar again
+        };
+
+    </script>
+
+</body>
+
+</html>
