@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+     <script>
+        // Security Guard: Check if a user is logged in
+        const activeUser = JSON.parse(localStorage.getItem('currentUser'));
+
+        if (!activeUser) {
+            // If no user is found in memory, block access and send them back to login
+            alert("Access Denied! Please login to your GSGS account first.");
+            window.location.href = 'index.html';
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Visa Intelligence | GSGS </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --accent: #FFD700;
+            --bg-dark: #050505;
+            --panel-bg: rgba(20, 20, 20, 0.98);
+            --border: rgba(255, 215, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            /* 1. The Background Image with Dark Overlay */
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                url('https://i.pinimg.com/736x/d1/22/c1/d122c16b135d9abcd39b9fd94fa64963.jpg'),
+                #050505;
+            /* Fallback color if image fails */
+
+            /* 2. Image Positioning */
+            background-size: cover;
+            background-position: center 40%;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+
+            /* 3. Text & Layout */
+            color: #e0e0e0;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+            margin: 0;
+            /* Ensures no weird white gaps at edges */
+        }
+
+        /* SIDEBAR NAVIGATION */
+        .sidebar {
+            width: 280px;
+            background: #000;
+            border-right: 1px solid var(--border);
+            padding: 40px 25px;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 60px;
+            width: calc(100% - 280px);
+            position: relative;
+        }
+
+        /* SELECTION SCREEN */
+        .selection-header {
+            margin-bottom: 50px;
+            text-align: left;
+        }
+
+        .selection-header h1 {
+            font-size: 38px;
+            color: var(--accent);
+            letter-spacing: -1px;
+        }
+
+        .selection-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .path-card {
+            background: linear-gradient(145deg, #111, #050505);
+            border: 1px solid var(--border);
+            padding: 80px 40px;
+            border-radius: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .path-card:hover {
+            border-color: var(--accent);
+            transform: scale(1.02);
+            box-shadow: 0 20px 40px rgba(100, 100, 0, 0.05);
+        }
+
+        .path-card i {
+            font-size: 64px;
+            color: var(--accent);
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        /* STEPS LIST VIEW */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        .active-view {
+            display: block;
+        }
+
+        .step-container {
+            margin-top: 30px;
+        }
+
+        .step-tile {
+            background: #111;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .step-tile:hover {
+            background: #1a1a1a;
+            border-color: var(--accent);
+            padding-left: 40px;
+        }
+
+        .step-tile h3 {
+            font-size: 18px;
+            color: #fff;
+        }
+
+        /* MEGA CONTENT BOX */
+        /* Change this section in your style tag */
+/* MEGA CONTENT BOX - UPDATED FOR WIDTH AND ALIGNMENT */
+        .details-box {
+            background: var(--panel-bg);
+            padding: 60px 80px;
+            border-radius: 30px;
+            border: 1px solid var(--border);
+            line-height: 1.8;
+            max-width: 1400px; /* Big Width */
+            width: 95%;        /* Big Width */
+            margin-bottom: 50px;
+            text-align: left; /* Ensures container starts left */
+        }
+
+        .content-section {
+            margin-bottom: 45px;
+            text-align: left; /* Forces section content left */
+        }
+
+        .content-section h4 {
+            color: var(--accent);
+            font-size: 22px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 0; /* Gap removed to use fixed icon width for alignment */
+            margin-left: 0; 
+            padding-left: 0;
+        }
+
+        /* Fixed Icon Width ensures text after icon starts at the same spot */
+        .content-section h4 i {
+            width: 40px; 
+            display: inline-block;
+            text-align: left;
+        }
+
+        .content-section p {
+            color: #bdbdbd;
+            font-size: 17px;
+            text-align: left; 
+            margin-left: 0; /* REMOVED 35px margin to align with icons */
+            padding-left: 0;
+        }
+
+        /* Added list styling to ensure bullets also align to the same line */
+        .content-section ul {
+            list-style-position: inside;
+            margin-left: 0;
+            padding-left: 0;
+            color: #bdbdbd;
+        }
+
+        .content-section li {
+            margin-bottom: 10px;
+            font-size: 17px;
+        }
+
+        .back-btn {
+            background: var(--accent);
+            color: #000;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    
+ <aside class="sidebar">
+    <div class="sidebar-brand" style="font-size: 28px; font-weight: 900; color: var(--accent); margin-bottom: 50px; letter-spacing: -1px;">GSGS</div>
+    <nav>
+        <a href="index.html" style="color:white; text-decoration:none; display:block; margin-bottom:25px; font-size: 14px; letter-spacing: 1px;">
+            <i class="fas fa-home" style="margin-right:15px; width: 20px;"></i> DASHBOARD
+        </a>
+        
+        <a href="universities.html" style="color:white; text-decoration:none; display:block; margin-bottom:25px; font-size: 14px; letter-spacing: 1px;">
+            <i class="fas fa-university" style="margin-right:15px; width: 20px;"></i> UNIVERSITIES
+        </a>
+
+        <a href="course-finder.html" style="color:white; text-decoration:none; display:block; margin-bottom:25px; font-size: 14px; letter-spacing: 1px;">
+            <i class="fas fa-search" style="margin-right:15px; width: 20px;"></i> COURSE FINDER
+        </a>
+
+        <a href="sop-builder.html" style="color:white; text-decoration:none; display:block; margin-bottom:25px; font-size: 14px; letter-spacing: 1px;">
+            <i class="fas fa-file-alt" style="margin-right:15px; width: 20px;"></i> SOP BUILDER
+        </a>
+
+        <a href="financial-guidance.html" style="color:white; text-decoration:none; display:block; margin-bottom:25px; font-size: 14px; letter-spacing: 1px;">
+            <i class="fas fa-hand-holding-usd" style="margin-right:15px; width: 20px;"></i> FINANCIAL GUIDANCE
+        </a>
+
+        <a href="visa-guide.html" style="color:var(--accent); text-decoration:none; display:block; margin-bottom:25px; font-size: 14px; letter-spacing: 1px; font-weight: bold;">
+            <i class="fas fa-passport" style="margin-right:15px; width: 20px;"></i> VISA GUIDANCE
+        </a>
+
+        <a href="career-support.html" style="color:white; text-decoration:none; display:block; margin-bottom:25px; font-size: 14px; letter-spacing: 1px;">
+            <i class="fas fa-user-graduate" style="margin-right:15px; width: 20px;"></i> CAREER SUPPORT
+        </a>
+    </nav>
+</aside>
+    </aside>
+
+    <main class="main-content">
+
+        <div id="screen-selection" class="view-section active-view">
+            <div class="selection-header">
+                <h1>Academic Visa Intelligence</h1>
+                <p>Detailed step-by-step navigational protocols for international student visas.</p>
+            </div>
+            <div class="selection-grid">
+                <div class="path-card" onclick="initiateGuide('normal')">
+                    <i class="fas fa-user-tie"></i>
+                    <h2>Standard Process</h2>
+                    <p>Self-Funded Student Logistics</p>
+                </div>
+                <div class="path-card" onclick="initiateGuide('scholarship')">
+                    <i class="fas fa-award"></i>
+                    <h2>Scholarship Holder</h2>
+                    <p>Funded Merit-Based Logistics</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-steps" class="view-section">
+            <button class="back-btn" onclick="switchView('screen-selection')">← Switch Category</button>
+            <h1 id="path-header" style="font-size: 34px; margin-bottom: 40px;"></h1>
+            <div id="steps-render-area"></div>
+        </div>
+
+        <div id="screen-details" class="view-section">
+            <button class="back-btn" onclick="switchView('screen-steps')">← Back to Steps</button>
+            <div id="details-render-area" class="details-box"></div>
+        </div>
+
+    </main>
+
+    <script>
+        const intelligenceBase = {
+            normal: {
+                title: "Standard Visa Navigational Route",
+                steps: [
+
+
+                    {
+                        title: "1. Global Submission Infrastructure: Where to Apply?",
+                        details: `
+
+
+        <div class="visa-container">
+            <div class="content-section">
+                <span class="continent-tag">Region: Asia</span>
+                <h4><i class="fas fa-map-marker-alt"></i> Asian Diplomatic Gateways</h4>
+                <p>Most Asian nations have moved away from Embassy walk-ins to dedicated third-party processing centers in Dhaka.</p>
+                <ul>
+                    <li><b>Japan:</b> Handled via <b>VFS Japan</b> in Gulshan-1. Direct Embassy submission is now restricted.</li>
+                    <li><b>South Korea:</b> Requires direct submission at the <b>South Korean Embassy</b> in Baridhara. 2026 rules require a pre-booked online token for all student and tourist categories.</li>
+                    <li><b>China:</b> Managed through the <b>Chinese Visa Application Service Center</b> in Banani. Mandatory biometric capture applies to all applicants.</li>
+                    <li><b>Saudi Arabia:</b> Requires mandatory biometric enrollment at <b>Tasheer (VFS Tasheer)</b> centers before any visa (Umrah/Visit) is issued.</li>
+                    <li><b>Singapore & Thailand:</b> Singapore applications are only accepted via <b>Authorized Visa Agents</b> (AVA). Thailand uses <b>VFS Global</b> or Saimon Global.</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <span class="continent-tag">Region: Europe</span>
+                <h4><i class="fas fa-euro-sign"></i> Europe & Schengen States</h4>
+                <p>The European landscape relies on a centralized biometric database (VIS) and representation agreements.</p>
+                <ul>
+                    <li><b>The VFS Hub:</b> <b>Germany, Italy, Switzerland, Spain,</b> and <b>Sweden</b> are processed at VFS Dhaka. As of 2026, <b>France</b> and <b>Belgium</b> have fully migrated their short-stay operations here.</li>
+                    <li><b>New Delhi Dependency:</b> For <b>Greece, Poland, Hungary,</b> and <b>Czech Republic</b>, you may need to travel to <b>New Delhi, India</b> for biometrics if the local temporary VAC is unavailable.</li>
+                    <li><b>Representation:</b> Sweden represents <b>Norway</b> and <b>Finland</b> for short-stay visas in Bangladesh.</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <span class="continent-tag">Region: North America</span>
+                <h4><i class="fas fa-flag-usa"></i> North American High-Security Presence</h4>
+                <p>These countries prioritize direct government oversight and mandatory face-to-face interviews.</p>
+                <ul>
+                    <li><b>USA:</b> A two-step process. First, visit the <b>VAC</b> for biometrics, then the <b>US Embassy in Baridhara</b> for the interview. 2026 updates include a 2-day processing window for specific immigrant categories.</li>
+                    <li><b>Canada:</b> All documents go through the <b>IRCC Portal</b>. Physical biometrics are required at <b>VFS Canada</b> in Dhaka or Sylhet.</li>
+                    <li><b>Mexico:</b> No consular mission in Dhaka; interviews and biometrics are conducted at the Mexican Embassy in <b>New Delhi</b>.</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <span class="continent-tag">Region: South America</span>
+                <h4><i class="fas fa-earth-americas"></i> South American Missions</h4>
+                <p>South American nations maintain direct consular interaction for security and verification.</p>
+                <ul>
+                    <li><b>Brazil:</b> Submit directly to the <b>Embassy of Brazil</b> in Gulshan-2. Appointments must be requested via the official SCEDV system.</li>
+                    <li><b>Argentina:</b> Handled by the <b>Argentine Embassy</b> in Banani. Since 2026, holders of valid US/Schengen visas may qualify for the AVE (Electronic Travel Authorization) system.</li>
+                    <li><b>Chile & Peru:</b> Primarily managed through their missions in <b>New Delhi</b>. Some business categories now allow digital uploads for preliminary approval.</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <span class="continent-tag">Region: Africa</span>
+                <h4><i class="fas fa-hippo"></i> African E-Visa & Sticker Centers</h4>
+                <p>Africa uses a hybrid model of ultra-modern E-visas and traditional sticker-based processing in India.</p>
+                <ul>
+                    <li><b>South Africa:</b> Applications are collected by <b>authorized partners (like Sticker Visa/VISAThing)</b> in Dhaka and sent to the High Commission in New Delhi.</li>
+                    <li><b>Egypt:</b> Requires physical document submission at the <b>Egypt Embassy</b> in Gulshan-2.</li>
+                    <li><b>Kenya & Ethiopia:</b> Almost exclusively <b>E-Visa</b> via official government portals. Physical sticker visas are becoming obsolete in 2026.</li>
+                    <li><b>Nigeria:</b> Requires biometrics at <b>OIS Services</b> or the Nigerian High Commission in Baridhara.</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <span class="continent-tag">Region: Australia & Oceania</span>
+                <h4><i class="fas fa-earth-oceania"></i> Oceania: The Label-less Framework</h4>
+                <p>A paperless ecosystem where visas are digitally linked to the applicant's passport number.</p>
+                <p>Australia and New Zealand have shifted to paperless visas linked directly to your passport number.</p>
+                <ul>
+                    <li><b>Australia:</b> Submit online via <b>ImmiAccount</b>. Biometrics must be done at the <b>ABCC (VFS Global)</b> in Dhaka.</li>
+                    <li><b>New Zealand:</b> A purely digital process via <b>RealMe</b>. No physical passport submission is required unless specifically flagged.</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <span class="continent-tag">Region: Antarctica</span>
+                <h4><i class="fas fa-snowflake"></i> Antarctica: Environmental Protocols</h4>
+                <p>Antarctica has no sovereign government; entry is governed by the Antarctic Treaty.</p>
+                <ul>
+                    <li><b>Operator Permits:</b> Your tour company (usually from <b>Argentina</b> or <b>USA</b>) secures the permit on your behalf.</li>
+                    <li><b>Signatory Permits:</b> Independent travelers must apply for a permit from the <b>NSF (USA)</b> or <b>Polar Regions Dept (UK)</b> at least 4 months in advance.</li>
+                    <li><b>Transit Entry:</b> Ensure you hold <b>Multiple Entry Visas</b> for the gateway countries (Argentina or Chile).</li>
+                </ul>
+            </div>
+        </div>
+    `
+                    }, {
+    title: "2. Financial Integrity & Asset Seasoning",
+    details: `
+
+
+            <div class="content-section">
+                <span class="tag-label">The Waiting Game</span>
+                <h4><i class="fas fa-clock"></i> The 28-Day & 6-Month Maturity Rules</h4>
+                <p>Ambassadors want to see that your money is "real" and not borrowed from a neighbor just for the interview. This is called 'Asset Seasoning'.</p>
+                <ul>
+                    <li><b>UK Tier-4:</b> Funds (Tuition + £1,171 to £1,529/month living) must be held for <b>exactly 28 consecutive days</b>. The closing balance must be within 31 days of the application.</li>
+                    <li><b>Australia (Subclass 500):</b> Requires a <b>3 to 6-month</b> history of stable savings. Sudden large deposits without a clear sale deed will trigger an immediate GTE (Genuine Student) rejection.</li>
+                    <li><b>USA (F-1):</b> While no strict "day count" exists, 6 months of bank statements are standard. Consuls look for "average balance" rather than just the final figure.</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <span class="tag-label">Locked Capital</span>
+                <h4><i class="fas fa-vault"></i> 2026 Blocked Accounts & GIC Mandates</h4>
+                <p>Some nations require you to transfer funds to their local banks before you even arrive. This capital is 'blocked' and released to you in monthly installments.</p>
+                <ul>
+                    <li><b>Germany:</b> As of January 2025/26, the blocked amount has increased to <b>€11,904</b> (€992/month). Use providers like <b>Expatrio</b>, <b>Fintiba</b>, or <b>Coracle</b>.</li>
+                    <li><b>Canada (SDS):</b> The GIC (Guaranteed Investment Certificate) requirement is now <b>CA$22,895</b> plus your first year's tuition. This is mandatory for the Student Direct Stream.</li>
+                    <li><b>France:</b> Requires proof of at least <b>€615/month</b>, often shown through a bank "attestation" or a blocked account in a French bank.</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <span class="tag-label">The Audit Trail</span>
+                <h4><i class="fas fa-file-invoice-dollar"></i> Verification of Fund Origin (KYC)</h4>
+                <p>Every Taka in your account must have a story. If the source is unclear, the visa is usually denied under "Section 214(b)" or "Financial Non-Bona Fide" grounds.</p>
+                <ul>
+                    <li><b>Business Owners:</b> Must provide 3 years of <b>IT-10B (Tax Returns)</b>, Trade License, and Company Bank Statements.</li>
+                    <li><b>Salaried Parents:</b> Requires 6 months of pay slips, a 'No Objection Certificate' (NOC), and a Visiting Card.</li>
+                    <li><b>Land/Asset Sales:</b> You must provide the <b>Original Sale Deed</b>, the <b>Mutation Paper</b>, and the bank deposit slip showing the transaction from the buyer.</li>
+                    <li><b>Agriculture:</b> Requires <b>Parcha/Khatiyan</b> documents and a translation of the J-Form or local harvesting records to prove income.</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <span class="tag-label">Authorized Sponsors</span>
+                <h4><i class="fas fa-users-cog"></i> Who Can Actually Sponsor You?</h4>
+                <p>Not everyone can sponsor your education. Consulates prefer the "Blood Relation" rule to ensure the sponsor is genuinely motivated to pay for you.</p>
+                <ul>
+                    <li><b>Tier 1 Sponsors:</b> Self, Father, Mother, and Spouse. These have the highest success rate.</li>
+                    <li><b>Tier 2 Sponsors:</b> Real Brothers, Sisters, and Paternal Uncles. Requires a <b>Registered Affidavit of Financial Support</b>.</li>
+                    <li><b>Third-Party/Company:</b> Only accepted if it is a government scholarship or a corporate bonding agreement. Distant cousins or family friends are usually rejected.</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <span class="tag-label">Debt Financing</span>
+                <h4><i class="fas fa-hand-holding-usd"></i> Educational Loan Standards</h4>
+                <p>If you are taking a loan, the bank must be a "Scheduled Bank." For Bangladesh, this includes most commercial banks like Prime Bank, City Bank, or EBL.</p>
+                <ul>
+                    <li><b>Sanction Letter:</b> Must state the loan is specifically for "Higher Education Abroad" and mention the university name.</li>
+                    <li><b>Disbursement:</b> The visa officer must see that the loan is "liquid" or ready to be disbursed upon visa grant.</li>
+                </ul>
+            </div>
+        </div>
+    `
+},
+                    {
+                        title: "3. Educational Attestation Workflow",
+                        details: `
+                            <div class="content-section">
+                                <h4><i class="fas fa-stamp"></i> Regulatory Attestation Chain</h4>
+                                <p>Documents have no legal standing without the triple-seal process: <br>1. <b>Education Board:</b> Verify SSC/HSC authenticity. <br>2. <b>Ministry of Education:</b> Verify Transcript and Certificates. <br>3. <b>Ministry of Foreign Affairs (MoFA):</b> The final legalization required for international scrutiny.</p>
+                            </div>
+                        `
+                    },
+                    {
+                        title: "4. Medical & Bio-Security Clearances",
+                        details: `
+                            <div class="content-section">
+                                <h4><i class="fas fa-microscope"></i> IOM Tuberculosis (TB) Screening</h4>
+                                <p>For UK and Australia, you must visit the IOM (International Organization for Migration) clinic. A chest X-ray is required. Without the IOM TB certificate, your visa application will be automatically invalidated at the VFS counter.</p>
+                            </div>
+                        `
+                    },
+                    {
+                        title: "5. Interview Architecture & Psychology",
+                        details: `
+                            <div class="content-section">
+                                <h4><i class="fas fa-brain"></i> Proving 'Genuineness'</h4>
+                                <p>The interview is not a test of English, but a test of intent. You must prove 'Home Ties' (Reasons to return to Bangladesh). Explain your career roadmap in the context of the local market economy post-graduation.</p>
+                            </div>
+                        `
+                    },
+                    {
+                        title: "6. Enrollment Documentation (CAS/I-20)",
+                        details: `
+                            <div class="content-section">
+                                <h4><i class="fas fa-file-alt"></i> The Final Authorization</h4>
+                                <p>Ensure your CAS (UK) or I-20 (USA) has the correct SEVIS ID and tuition details. Any mismatch between your bank statement and the tuition amount on these forms results in a 100% rejection rate.</p>
+                            </div>
+                        `
+                    }
+                ]
+            },
+            scholarship: {
+                title: "Scholarship Holder Priority Route",
+                steps: [
+                    {
+                        title: "1. Submission Protocol for Scholars",
+                        details: `
+                            <div class="content-section">
+                                <h4><i class="fas fa-bolt"></i> Priority Processing & Locations</h4>
+                                <p>Scholarship holders (Erasmus, MEXT, CSC) often use a <b>Priority Queue</b>. While you may still go to VFS, you must select the 'National Interest' or 'Scholarship' category on the booking portal. Some EU countries allow direct submission to the Embassy for Government Scholars.</p>
+                            </div>
+                            <div class="content-section">
+                                <h4><i class="fas fa-hand-holding-heart"></i> Embassy Support Letters</h4>
+                                <p>Request a 'Note Verbale' or a Visa Support Letter from your scholarship donor. Presenting this at the VFS/Embassy gate often bypasses standard security queues and standard processing delays.</p>
+                            </div>
+                        `
+                    },
+                    {
+                        title: "2. Financial Waivers & Award Verification",
+                        details: `
+                            <div class="content-section">
+                                <h4><i class="fas fa-file-signature"></i> The Award Letter Logic</h4>
+                                <p>Your 'Scholarship Award Letter' is your primary financial instrument. It must explicitly state coverage for Tuition, Health Insurance, and Monthly Stipend. If it covers everything, your personal bank statement requirement is legally eliminated.</p>
+                            </div>
+                            <div class="content-section">
+                                <h4><i class="fas fa-tags"></i> Claiming Fee Exemptions</h4>
+                                <p>Government-sponsored scholars (Stipendium Hungaricum, etc.) are often exempt from the €80-€120 Visa Application Fee. Do not pay online before verifying your exemption status with the local consulate.</p>
+                            </div>
+                        `
+                    },
+                    {
+                        title: "3. Merit-Focused Interview Strategy",
+                        details: `
+                            <div class="content-section">
+                                <h4><i class="fas fa-user-graduate"></i> Academic Merit Defense</h4>
+                                <p>Your interview will skip financial questions. Instead, be prepared for <b>Academic Rigor</b>. Why did this government choose YOU? How will your research project benefit the bilateral relationship between the two countries? Focus on 'Knowledge Transfer'.</p>
+                            </div>
+                        `
+                    },
+                    {
+                        title: "4. Health & Enrollment Finalization",
+                        details: `
+                            <div class="content-section">
+                                <h4><i class="fas fa-check-double"></i> Enrollment & Insurance</h4>
+                                <p>Most scholarships include the <b>Overseas Student Health Cover (OSHC)</b>. You must provide the policy certificate. Verify that your admission letter mentions the scholarship grant clearly to synchronize with your visa application form.</p>
+                            </div>
+                        `
+                    }
+                ]
+            }
+        };
+
+        let activePath = '';
+
+        function initiateGuide(path) {
+            activePath = path;
+            document.getElementById('path-header').innerText = intelligenceBase[path].title;
+            const container = document.getElementById('steps-render-area');
+            container.innerHTML = '';
+
+            intelligenceBase[path].steps.forEach((step, idx) => {
+                container.innerHTML += `
+                    <div class="step-tile" onclick="renderDetails(${idx})">
+                        <h3>${step.title}</h3>
+                        <i class="fas fa-arrow-right" style="color:var(--accent)"></i>
+                    </div>`;
+            });
+            switchView('screen-steps');
+        }
+
+        function renderDetails(idx) {
+            const stepData = intelligenceBase[activePath].steps[idx];
+            document.getElementById('details-render-area').innerHTML = `<h2>${stepData.title}</h2>${stepData.details}`;
+            switchView('screen-details');
+        }
+
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active-view'));
+            document.getElementById(viewId).classList.add('active-view');
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+
+</html>
