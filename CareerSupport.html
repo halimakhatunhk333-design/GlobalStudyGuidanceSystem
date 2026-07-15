@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <script>
+        // Security Guard: Check if a user is logged in
+        const activeUser = JSON.parse(localStorage.getItem('currentUser'));
+
+        if (!activeUser) {
+            // If no user is found in memory, block access and send them back to login
+            alert("Access Denied! Please login to your GSGS account first.");
+            window.location.href = 'index.html';
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Hub | GSGS 2026</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-deep: #0b0e11;
+            --bg-panel: #14171c;
+            --bg-card: #1e2227;
+            --light-orange: #ffb347;
+            --emerald: #10b981;
+            --text-white: #ffffff;
+            --text-dim: #a0aec0;
+            --border: #2d333b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-deep); color: var(--text-white); display: flex; line-height: 1.6; }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 260px; background: var(--bg-panel); height: 100vh; position: fixed;
+            border-right: 1px solid var(--border); padding: 40px 20px;
+        }
+        .sidebar-brand { font-size: 26px; font-weight: 800; color: var(--light-orange); margin-bottom: 50px; }
+        .nav-link { 
+            color: var(--text-dim); text-decoration: none; padding: 12px 15px; display: flex; 
+            align-items: center; gap: 12px; border-radius: 8px; margin-bottom: 10px; transition: 0.3s;
+        }
+        .nav-link.active { background: var(--bg-card); color: var(--light-orange); border-right: 3px solid var(--light-orange); }
+
+        .main-content { margin-left: 260px; width: calc(100% - 260px); padding: 60px 80px; }
+
+        /* Header Style */
+        header { margin-bottom: 50px; }
+        header h1 { font-size: 36px; margin-bottom: 10px; font-weight: 900; }
+        header p { color: var(--text-dim); font-size: 16px; max-width: 700px; }
+
+        /* Deep Info Section */
+        .info-section { margin-bottom: 60px; }
+        .section-title { font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: var(--light-orange); margin-bottom: 25px; display: block; font-weight: 700; }
+
+        /* Grid Layout */
+        .career-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .deep-card { background: var(--bg-panel); border: 1px solid var(--border); padding: 35px; border-radius: 20px; position: relative; }
+        .deep-card h3 { margin-bottom: 15px; font-size: 22px; color: var(--text-white); }
+        .deep-card ul { list-style: none; margin-top: 20px; }
+        .deep-card li { margin-bottom: 15px; color: var(--text-dim); font-size: 14px; display: flex; align-items: flex-start; gap: 10px; }
+        .deep-card li i { color: var(--emerald); margin-top: 4px; }
+        
+        /* Focus Tags */
+        .tag { background: rgba(255, 179, 71, 0.1); color: var(--light-orange); padding: 4px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; margin-bottom: 10px; display: inline-block; }
+
+        /* Table Design */
+        .data-table-container { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 20px; padding: 30px; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 15px; color: var(--text-dim); font-size: 12px; border-bottom: 1px solid var(--border); }
+        td { padding: 20px 15px; border-bottom: 1px solid #24292f; font-size: 14px; }
+        .salary { color: var(--emerald); font-weight: 700; }
+
+        /* Action Buttons */
+        .btn-main { background: var(--light-orange); color: #000; padding: 12px 24px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .btn-main:hover { opacity: 0.9; transform: translateY(-2px); }
+
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-brand">GSGS</div>
+        <nav class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="universities.html" class="nav-link"><i class="fas fa-university"></i> Universities</a>
+            <a href="course-finder.html" class="nav-link"><i class="fas fa-book"></i> course-finder</a>
+            <a href="sop-builder.html" class="nav-link"><i class="fas fa-file-alt"></i> SOP Builder</a>
+            <a href="scholarship.html" class="nav-link"><i class="fas fa-graduation-cap"></i> Scholarship</a>
+            <a href="financial-guidance.html" class="nav-link"><i class="fas fa-hand-holding-usd"></i> financial-guidance</a>
+            <a href="visa-guide.html" class="nav-link"><i class="fas fa-passport"></i> visa-guide</a>
+            <a href="career-support.html" class="nav-link active"><i class="fas fa-user-graduate"></i> Career Hub</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header>
+            <h1>Career Success & Job Rights</h1>
+            <p>From day one of your studies to your first full-time job. Here is the exact path to employment in your destination country.</p>
+        </header>
+
+        <div class="info-section">
+            <span class="section-title">01. Employment Strategy</span>
+            <div class="career-grid">
+                <div class="deep-card">
+                    <span class="tag">Early Stage</span>
+                    <h3>The First Semester Plan</h3>
+                    <p style="color:var(--text-dim)">You must start preparing for a job the moment you land. Jobs abroad are not just about degrees; they are about connections.</p>
+                    <ul>
+                        <li><i class="fas fa-check-circle"></i> <strong>LinkedIn Profile:</strong> Connect with seniors (alumni) who already have jobs in your field.</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Local Resume:</strong> Convert your CV to the specific local format (e.g., Canadian Resume vs. US Resume).</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Job Fairs:</strong> Every university holds 2 major fairs. You must attend these to meet recruiters in person.</li>
+                    </ul>
+                </div>
+                <div class="deep-card">
+                    <span class="tag">Market Secret</span>
+                    <h3>The Hidden Job Market</h3>
+                    <p style="color:var(--text-dim)">Over 70% of high-paying jobs are never posted on public websites. They are filled through "Referrals."</p>
+                    <ul>
+                        <li><i class="fas fa-user-friends"></i> <strong>How it works:</strong> A current employee recommends you to the manager. You get an interview immediately.</li>
+                        <li><i class="fas fa-comment-dots"></i> <strong>Strategy:</strong> Ask seniors for "Informational Interviews" to learn about their company.</li>
+                        <li><i class="fas fa-link"></i> <strong>Referral Power:</strong> A referred candidate is 10x more likely to be hired than a random online applicant.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        
+
+        <div class="info-section">
+            <span class="section-title">02. Work Permits & Salary (Deep Info)</span>
+            <p style="color:var(--text-dim); margin-bottom: 20px;">Understand how long you can legally stay and work after you finish your degree.</p>
+            <div class="data-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Country</th>
+                            <th>Stay Back (Visa)</th>
+                            <th>Part-Time Limit</th>
+                            <th>Starting Salary (Avg.)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>USA</strong></td>
+                            <td>3 Years (STEM degrees)</td>
+                            <td>20 Hrs / Week</td>
+                            <td><span class="salary">$75,000 / Year</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>UK</strong></td>
+                            <td>2 Years (Graduate Visa)</td>
+                            <td>20 Hrs / Week</td>
+                            <td><span class="salary">£35,000 / Year</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Canada</strong></td>
+                            <td>Up to 3 Years (PGWP)</td>
+                            <td>20 Hrs / Week</td>
+                            <td><span class="salary">C$60,000 / Year</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Australia</strong></td>
+                            <td>2 - 4 Years (Post-Study)</td>
+                            <td>24 Hrs / Week</td>
+                            <td><span class="salary">A$70,000 / Year</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <span class="section-title">03. Critical Action Steps</span>
+            <div class="career-grid">
+                <div class="deep-card" style="border-left: 4px solid var(--emerald);">
+                    <h3>Work Identification (ID)</h3>
+                    <p>To work legally (even part-time), you need a tax ID. Apply for these on your first week.</p>
+                    <ul>
+                        <li><strong>USA:</strong> Social Security Number (SSN).</li>
+                        <li><strong>UK:</strong> National Insurance Number (NINO).</li>
+                        <li><strong>Canada:</strong> Social Insurance Number (SIN).</li>
+                    </ul>
+                </div>
+                <div class="deep-card" style="border-left: 4px solid var(--light-orange);">
+                    <h3>Part-Time Jobs</h3>
+                    <p>Most students work in retail, tutoring, or admin to cover their food and rent costs.</p>
+                    <ul>
+                        <li><strong>On-Campus:</strong> Working for the university (library, cafe). Best for your CV.</li>
+                        <li><strong>Off-Campus:</strong> Supermarkets, logistics, or delivery. Easier to find.</li>
+                        <li><strong>Pay:</strong> Expect $15–$25 per hour depending on the country.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+</body>
+</html>
